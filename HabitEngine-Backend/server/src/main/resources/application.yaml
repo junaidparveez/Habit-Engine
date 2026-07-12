@@ -1,0 +1,82 @@
+# ============================================================
+# HabitEngine — Application Configuration
+# ============================================================
+
+spring:
+  application:
+    name: HabitEngine
+
+  # --- Database Configuration ---
+  datasource:
+    url: jdbc:postgresql://localhost:5432/habitEngineDB
+    username: postgres
+    password: Probuddy
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 300000
+      connection-timeout: 20000
+      pool-name: HabitEngineHikariPool
+
+  # --- JPA / Hibernate ---
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+
+  # --- Jackson ---
+  jackson:
+    default-property-inclusion: non_null
+    time-zone: UTC
+
+  # --- Spring AI (disabled until API key is configured) ---
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY:not-configured}
+
+  # --- Mail (deferred to Milestone 11) ---
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+    # Mail is disabled if MAIL_USERNAME is not set (prevents startup errors)
+    test-connection: false
+
+# --- Server ---
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+# --- Logging ---
+logging:
+  level:
+    root: INFO
+    com.habitengine: DEBUG
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql.BasicBinder: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+# --- JWT Configuration ---
+jwt:
+  secret: ${JWT_SECRET:HabitEngine2026SecretKeyForJWTAuthenticationMustBeAtLeast256BitsLong}
+  expiration: 86400000      # 24 hours in milliseconds
+  refresh-expiration: 604800000  # 7 days in milliseconds
+
+# --- Notifications ---
+notifications:
+  reminder-cron: "0 0 8 * * ?"   # Daily at 8:00 AM
