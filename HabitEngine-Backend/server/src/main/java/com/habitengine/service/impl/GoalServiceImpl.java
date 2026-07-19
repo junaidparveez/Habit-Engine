@@ -1,21 +1,28 @@
 package com.habitengine.service.impl;
 
+import com.habitengine.dto.GoalMilestoneDTO;
+import com.habitengine.dto.StudyResourceDTO;
 import com.habitengine.dto.request.CreateGoalRequest;
 import com.habitengine.dto.request.UpdateGoalRequest;
 import com.habitengine.dto.response.GoalResponse;
 import com.habitengine.entity.Goal;
+import com.habitengine.entity.GoalMilestone;
 import com.habitengine.entity.Habit;
+import com.habitengine.entity.RoutineBlock;
+import com.habitengine.entity.StudyResource;
 import com.habitengine.exception.DuplicateResourceException;
 import com.habitengine.exception.ResourceNotFoundException;
 import com.habitengine.mapper.GoalMapper;
+import com.habitengine.repository.GoalMilestoneRepository;
 import com.habitengine.repository.GoalRepository;
+import com.habitengine.repository.RoutineBlockRepository;
+import com.habitengine.repository.StudyResourceRepository;
 import com.habitengine.service.GoalService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,6 +32,9 @@ import java.util.stream.Collectors;
 public class GoalServiceImpl implements GoalService {
 
     private final GoalRepository goalRepository;
+    private final GoalMilestoneRepository milestoneRepository;
+    private final StudyResourceRepository resourceRepository;
+    private final RoutineBlockRepository routineBlockRepository;
 
     @Override
     @Transactional
@@ -98,18 +108,114 @@ public class GoalServiceImpl implements GoalService {
         for (Habit habit : goal.getHabits()) {
             habit.setGoal(null);
         }
+
+        // Unlink routine blocks referencing this goal
+        List<RoutineBlock> blocks = routineBlockRepository.findByLinkedGoalId(id);
+        for (RoutineBlock block : blocks) {
+            block.setLinkedGoal(null);
+            block.setLinkedMilestone(null);
+            routineBlockRepository.save(block);
+        }
         
         goalRepository.delete(goal);
     }
-    
+
+    @Override
+    @Transactional
+    public GoalMilestoneDTO addMilestone(Long goalId, GoalMilestoneDTO dto, Long userId) {
+        Goal goal = goalRepository.findById(goalId)
+                .orElseThrow(() -> new ResourceNotFoundException("Goal", "id", goalId));
+
+        GoalMilestone milestone = GoalMilestone.builder()
+                .goal(goal)
+                .title(dto.getTitle())
+                .description(dto.getDescription())
+                .targetWeek(dto.getTargetWeek())
+                .sortOrder(dto.getSortOrder() != null ? dto.getSortOrder() : 0)
+                .isCompleted(false)
+                .build();
+
+        GoalMilestone saved = milestoneRepository.save(milestone);
+        return mapMilestoneToDTO(saved);
+    }
+
+    @Override
+    @Transactional
+    public GoalMilestoneDTO toggleMilestone(Long milestoneId, Long userId) {
+        GoalMilestone milestone = milestoneRepository.findById(milestoneId)
+                .orElseThrow(() -> new ResourceNotFoundException("Milestone", "id", milestoneId));
+
+        milestone.setCompleted(!milestone.isCompleted());
+        GoalMilestone updated = milestoneRepository.save(milestone);
+        return mapMilestoneToDTO(updated);
+    }
+
+    @Override
+    @Transactional
+    public void deleteMilestone(Long milestoneId, Long userId) {
+        GoalMilestone milestone = milestoneRepository.findById(milestoneId)
+                .orElseThrow(() -> new ResourceNotFoundException("Milestone", "id", milestoneId));
+
+        // Unlink routine blocks referencing this milestone
+        List<RoutineBlock> blocks = routineBlockRepository.findByLinkedMilestoneId(milestoneId);
+        for (RoutineBlock block : blocks) {
+            block.setLinkedMilestone(null);
+            routineBlockRepository.save(block);
+        }
+
+        milestoneRepository.delete(milestone);
+    }
+
+    @Override
+    @Transactional
+    public StudyResourceDTO addResource(Long userId, StudyResourceDTO dto) {
+        Goal goal = dto.getGoalId() != null ? goalRepository.findById(dto.getGoalId()).orElse(null) : null;
+        GoalMilestone milestone = dto.getMilestoneId() != null ? milestoneRepository.findById(dto.getMilestoneId()).orElse(null) : null;
+
+        StudyResource resource = StudyResource.builder()
+                .userId(userId)
+                .goal(goal)
+                .milestone(milestone)
+                .title(dto.getTitle())
+                .resourceType(dto.getResourceType())
+                .urlOrContent(dto.getUrlOrContent())
+                .build();
+
+        StudyResource saved = resourceRepository.save(resource);
+        return mapResourceToDTO(saved);
+    }
+
+    @Override
+    @Transactional
+    public void deleteResource(Long resourceId, Long userId) {
+        StudyResource resource = resourceRepository.findById(resourceId)
+                .filter(r -> r.getUserId().equals(userId))
+                .orElseThrow(() -> new ResourceNotFoundException("StudyResource", "id", resourceId));
+        resourceRepository.delete(resource);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<StudyResourceDTO> getUserResources(Long userId) {
+        return resourceRepository.findByUserId(userId).stream()
+                .map(this::mapResourceToDTO)
+                .collect(Collectors.toList());
+    }
+
     private GoalResponse enrichWithProgress(Goal goal) {
         GoalResponse response = GoalMapper.toResponse(goal);
         
-        // Very basic progress calculation based on linked habits' active status or streaks.
-        // If a goal has habits, we could calculate progress.
-        // If a goal is ACHIEVED, progress is 100.
+        List<GoalMilestone> milestones = milestoneRepository.findByGoalIdOrderBySortOrderAscTargetWeekAsc(goal.getId());
+        response.setMilestones(milestones.stream().map(this::mapMilestoneToDTO).collect(Collectors.toList()));
+
+        List<StudyResource> resources = resourceRepository.findByGoalId(goal.getId());
+        response.setResources(resources.stream().map(this::mapResourceToDTO).collect(Collectors.toList()));
+
         if ("ACHIEVED".equalsIgnoreCase(goal.getStatus())) {
             response.setProgress(100);
+        } else if (!milestones.isEmpty()) {
+            long completedMilestones = milestones.stream().filter(GoalMilestone::isCompleted).count();
+            response.setProgress((int) Math.round(((double) completedMilestones / milestones.size()) * 100));
         } else if (goal.getHabits() != null && !goal.getHabits().isEmpty()) {
             int totalHabits = goal.getHabits().size();
             int activeStreaks = 0;
@@ -124,5 +230,29 @@ public class GoalServiceImpl implements GoalService {
         }
         
         return response;
+    }
+
+    private GoalMilestoneDTO mapMilestoneToDTO(GoalMilestone m) {
+        return GoalMilestoneDTO.builder()
+                .id(m.getId())
+                .goalId(m.getGoal().getId())
+                .title(m.getTitle())
+                .description(m.getDescription())
+                .targetWeek(m.getTargetWeek())
+                .isCompleted(m.isCompleted())
+                .sortOrder(m.getSortOrder())
+                .build();
+    }
+
+    private StudyResourceDTO mapResourceToDTO(StudyResource r) {
+        return StudyResourceDTO.builder()
+                .id(r.getId())
+                .userId(r.getUserId())
+                .goalId(r.getGoal() != null ? r.getGoal().getId() : null)
+                .milestoneId(r.getMilestone() != null ? r.getMilestone().getId() : null)
+                .title(r.getTitle())
+                .resourceType(r.getResourceType())
+                .urlOrContent(r.getUrlOrContent())
+                .build();
     }
 }

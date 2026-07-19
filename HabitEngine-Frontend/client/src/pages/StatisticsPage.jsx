@@ -88,7 +88,7 @@ export default function StatisticsPage() {
 
       <Grid container spacing={3}>
         {/* Heatmap Section */}
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Card elevation={0}>
             <CardContent sx={{ p: 4, overflowX: "auto" }}>
               <Typography variant="h5" sx={{ mb: 3 }}>
@@ -196,7 +196,7 @@ export default function StatisticsPage() {
         </Grid>
 
         {/* Trends Section */}
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Card elevation={0}>
             <CardContent sx={{ p: 4 }}>
               <Typography variant="h5" sx={{ mb: 3 }}>

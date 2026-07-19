@@ -27,6 +27,7 @@ public class GroupService {
     private final GroupMemberRepository memberRepository;
     private final UserRepository userRepository;
     private final EntityManager entityManager;
+    private final com.habitengine.repository.ChatMessageRepository chatMessageRepository;
 
     @Transactional
     public HabitGroup createGroup(User owner, String name, String description) {
@@ -48,10 +49,19 @@ public class GroupService {
         return group;
     }
 
-    public List<HabitGroup> listGroups(User user) {
+    public List<Map<String, Object>> listGroups(User user) {
         return memberRepository.findByUser(user).stream()
-                .filter(m -> m.getStatus() == MemberStatus.APPROVED)
-                .map(GroupMember::getGroup)
+                .map(m -> {
+                    HabitGroup g = m.getGroup();
+                    long membersCount = memberRepository.findByGroupAndStatus(g, MemberStatus.APPROVED).size();
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("id", g.getId());
+                    map.put("name", g.getName());
+                    map.put("status", m.getStatus().name());
+                    map.put("role", m.getRole().name());
+                    map.put("membersCount", membersCount);
+                    return map;
+                })
                 .collect(Collectors.toList());
     }
 
@@ -144,8 +154,8 @@ public class GroupService {
         return members.stream().map(m -> {
             User u = m.getUser();
             Long totalStreak = (Long) entityManager.createQuery(
-                    "SELECT COALESCE(SUM(s.currentStreak), 0) FROM HabitStreak s WHERE s.habit.user = :user")
-                    .setParameter("user", u)
+                    "SELECT COALESCE(SUM(s.currentStreak), 0) FROM HabitStreak s WHERE s.habit.userId = :userId")
+                    .setParameter("userId", u.getId())
                     .getSingleResult();
 
             Map<String, Object> map = new HashMap<>();
@@ -153,11 +163,24 @@ public class GroupService {
             map.put("username", u.getUsername());
             map.put("xp", u.getCurrentXp());
             map.put("totalStreak", totalStreak);
+            map.put("role", m.getRole().name());
             return map;
         }).sorted((a, b) -> {
             int xpComparison = Integer.compare((int) b.get("xp"), (int) a.get("xp"));
             if (xpComparison != 0) return xpComparison;
             return Long.compare((long) b.get("totalStreak"), (long) a.get("totalStreak"));
         }).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void deleteGroup(User owner, Long groupId) {
+        HabitGroup group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new IllegalArgumentException("Group not found"));
+        if (!group.getOwner().getId().equals(owner.getId())) {
+            throw new IllegalStateException("Only the owner can delete the group");
+        }
+        chatMessageRepository.deleteByGroup(group);
+        memberRepository.deleteByGroup(group);
+        groupRepository.delete(group);
     }
 }

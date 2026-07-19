@@ -1,10 +1,13 @@
 package com.habitengine.controller;
 
 import com.habitengine.constants.AppConstants;
+import com.habitengine.dto.GoalMilestoneDTO;
+import com.habitengine.dto.StudyResourceDTO;
 import com.habitengine.dto.request.CreateGoalRequest;
 import com.habitengine.dto.request.UpdateGoalRequest;
 import com.habitengine.dto.response.ApiResponse;
 import com.habitengine.dto.response.GoalResponse;
+import com.habitengine.entity.User;
 import com.habitengine.service.GoalService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import com.habitengine.entity.User;
 
 import java.util.List;
 
@@ -77,5 +79,55 @@ public class GoalController {
         boolean isAdmin = user.getRole().name().equals("ADMIN");
         goalService.deleteGoal(id, user.getId(), isAdmin);
         return ResponseEntity.ok(ApiResponse.success("Goal deleted successfully", null));
+    }
+
+    // --- Milestones ---
+
+    @PostMapping("/{id}/milestones")
+    public ResponseEntity<ApiResponse<GoalMilestoneDTO>> addMilestone(
+            @PathVariable Long id,
+            @RequestBody GoalMilestoneDTO dto) {
+        User user = getCurrentUser();
+        GoalMilestoneDTO response = goalService.addMilestone(id, dto, user.getId());
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Milestone added successfully", response));
+    }
+
+    @PostMapping("/milestones/{milestoneId}/toggle")
+    public ResponseEntity<ApiResponse<GoalMilestoneDTO>> toggleMilestone(@PathVariable Long milestoneId) {
+        User user = getCurrentUser();
+        GoalMilestoneDTO response = goalService.toggleMilestone(milestoneId, user.getId());
+        return ResponseEntity.ok(ApiResponse.success("Milestone updated", response));
+    }
+
+    @DeleteMapping("/milestones/{milestoneId}")
+    public ResponseEntity<ApiResponse<Void>> deleteMilestone(@PathVariable Long milestoneId) {
+        User user = getCurrentUser();
+        goalService.deleteMilestone(milestoneId, user.getId());
+        return ResponseEntity.ok(ApiResponse.success("Milestone deleted", null));
+    }
+
+    // --- Study Resources ---
+
+    @PostMapping("/resources")
+    public ResponseEntity<ApiResponse<StudyResourceDTO>> addResource(@RequestBody StudyResourceDTO dto) {
+        User user = getCurrentUser();
+        StudyResourceDTO response = goalService.addResource(user.getId(), dto);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Study resource added", response));
+    }
+
+    @GetMapping("/resources")
+    public ResponseEntity<ApiResponse<List<StudyResourceDTO>>> getUserResources() {
+        User user = getCurrentUser();
+        List<StudyResourceDTO> response = goalService.getUserResources(user.getId());
+        return ResponseEntity.ok(ApiResponse.success(AppConstants.MSG_SUCCESS, response));
+    }
+
+    @DeleteMapping("/resources/{resourceId}")
+    public ResponseEntity<ApiResponse<Void>> deleteResource(@PathVariable Long resourceId) {
+        User user = getCurrentUser();
+        goalService.deleteResource(resourceId, user.getId());
+        return ResponseEntity.ok(ApiResponse.success("Resource deleted", null));
     }
 }

@@ -42,6 +42,14 @@ public class Goal {
     @Builder.Default
     private List<Habit> habits = new ArrayList<>();
 
+    @OneToMany(mappedBy = "goal", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<GoalMilestone> milestones = new ArrayList<>();
+
+    @OneToMany(mappedBy = "goal", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<StudyResource> resources = new ArrayList<>();
+
     @CreationTimestamp
     @Column(updatable = false)
     private Instant createdAt;

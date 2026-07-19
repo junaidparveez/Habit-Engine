@@ -28,11 +28,7 @@ public class GroupController {
 
     @GetMapping
     public ResponseEntity<?> listGroups(@AuthenticationPrincipal User user) {
-        List<HabitGroup> groups = groupService.listGroups(user);
-        List<Map<String, Object>> res = groups.stream()
-                .map(g -> Map.<String, Object>of("id", g.getId(), "name", g.getName()))
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(res);
+        return ResponseEntity.ok(groupService.listGroups(user));
     }
 
     @PostMapping("/{groupId}/invite/{userId}")
@@ -68,5 +64,11 @@ public class GroupController {
     @GetMapping("/{groupId}/leaderboard")
     public ResponseEntity<?> getLeaderboard(@PathVariable Long groupId) {
         return ResponseEntity.ok(groupService.getGroupLeaderboard(groupId));
+    }
+
+    @DeleteMapping("/{groupId}")
+    public ResponseEntity<?> deleteGroup(@AuthenticationPrincipal User user, @PathVariable Long groupId) {
+        groupService.deleteGroup(user, groupId);
+        return ResponseEntity.ok(Map.of("message", "Group deleted successfully"));
     }
 }

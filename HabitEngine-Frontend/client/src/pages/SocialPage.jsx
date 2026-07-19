@@ -103,6 +103,15 @@ export default function SocialPage() {
     }
   };
 
+  const handleAcceptGroupInvite = async (groupId) => {
+    try {
+      await socialApi.acceptGroupInvite(groupId);
+      fetchData();
+    } catch (err) {
+      console.error("Failed to accept group invite", err);
+    }
+  };
+
   const handleCreateGroup = async () => {
     try {
       await socialApi.createGroup({ name: groupName, description: groupDesc });
@@ -134,7 +143,7 @@ export default function SocialPage() {
         </Tabs>
 
         {loading ? (
-          <Box display="flex" justifyContent="center" p={5}>
+          <Box sx={{ display: "flex", justifyContent: "center", p: 5 }}>
             <CircularProgress />
           </Box>
         ) : (
@@ -142,10 +151,12 @@ export default function SocialPage() {
             {/* CONNECTIONS TAB */}
             <TabPanel value={tabValue} index={0}>
               <Box
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
-                mb={2}
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 2,
+                }}
               >
                 <Typography variant="h6">Friends</Typography>
                 <Button
@@ -208,10 +219,12 @@ export default function SocialPage() {
             {/* GROUPS TAB */}
             <TabPanel value={tabValue} index={1}>
               <Box
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
-                mb={2}
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 2,
+                }}
               >
                 <Typography variant="h6">Groups</Typography>
                 <Button
@@ -234,21 +247,30 @@ export default function SocialPage() {
                       key={group.id}
                       divider
                       secondaryAction={
-                        <IconButton
-                          onClick={() => navigate(`/groups/${group.id}`)}
-                        >
-                          <ArrowForwardIosIcon fontSize="small" />
-                        </IconButton>
+                        group.status === "PENDING" ? (
+                          <IconButton
+                            onClick={() => handleAcceptGroupInvite(group.id)}
+                            color="primary"
+                          >
+                            <CheckIcon />
+                          </IconButton>
+                        ) : (
+                          <IconButton
+                            onClick={() => navigate(`/groups/${group.id}`)}
+                          >
+                            <ArrowForwardIosIcon fontSize="small" />
+                          </IconButton>
+                        )
                       }
                     >
                       <ListItemAvatar>
-                        <Avatar sx={{ bgcolor: "primary.main" }}>
+                        <Avatar sx={{ bgcolor: group.status === "PENDING" ? "secondary.main" : "primary.main" }}>
                           {group.name ? group.name[0] : "G"}
                         </Avatar>
                       </ListItemAvatar>
                       <ListItemText
                         primary={group.name}
-                        secondary={`${group.membersCount || 0} members`}
+                        secondary={group.status === "PENDING" ? "Pending Invite" : `${group.membersCount || 0} members`}
                       />
                     </ListItem>
                   ))

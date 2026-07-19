@@ -13,6 +13,8 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import java.util.stream.Collectors;
+import java.util.List;
 
 import java.util.Map;
 
@@ -112,6 +115,7 @@ public class ChatController {
     }
 
     @GetMapping("/group/{groupId}")
+    @Transactional(readOnly = true)
     public ResponseEntity<?> getGroupHistory(@PathVariable Long groupId) {
         HabitGroup group = groupRepository.findById(groupId).orElse(null);
         if (group == null) return ResponseEntity.notFound().build();
@@ -126,10 +130,11 @@ public class ChatController {
     }
 
     @GetMapping("/private/{receiverId}")
+    @Transactional(readOnly = true)
     public ResponseEntity<?> getPrivateHistory(@AuthenticationPrincipal User user, @PathVariable Long receiverId) {
         User receiver = userRepository.findById(receiverId).orElse(null);
         if (receiver == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(chatMessageRepository.findBySenderAndReceiverOrReceiverAndSenderOrderByTimestampAsc(user, receiver, user, receiver).stream()
+        return ResponseEntity.ok(chatMessageRepository.findPrivateConversation(user, receiver).stream()
                 .map(m -> Map.of(
                         "id", m.getId(),
                         "senderId", m.getSender().getId(),
@@ -139,4 +144,18 @@ public class ChatController {
                         "timestamp", m.getTimestamp().toString()
                 )).collect(Collectors.toList()));
     }
+
+    @DeleteMapping("/private/{receiverId}")
+    @Transactional
+    public ResponseEntity<?> clearPrivateChat(@AuthenticationPrincipal User user,
+                                              @PathVariable Long receiverId) {
+        User receiver = userRepository.findById(receiverId).orElse(null);
+        if (receiver == null) return ResponseEntity.notFound().build();
+
+        List<ChatMessage> messages = chatMessageRepository.findPrivateConversation(user, receiver);
+        chatMessageRepository.deleteAll(messages);
+        log.info("User {} cleared chat with user {}", user.getId(), receiverId);
+        return ResponseEntity.ok(Map.of("message", "Chat cleared successfully"));
+    }
 }
+

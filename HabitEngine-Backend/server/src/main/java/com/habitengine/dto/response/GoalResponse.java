@@ -25,4 +25,7 @@ public class GoalResponse {
     // Derived progress metric (0 to 100)
     private int progress;
     private int totalHabits;
+
+    private List<com.habitengine.dto.GoalMilestoneDTO> milestones;
+    private List<com.habitengine.dto.StudyResourceDTO> resources;
 }

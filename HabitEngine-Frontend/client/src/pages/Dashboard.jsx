@@ -10,17 +10,23 @@ import {
   IconButton,
   ToggleButton,
   ToggleButtonGroup,
+  Checkbox,
+  LinearProgress,
+  Button,
 } from "@mui/material";
 import CheckIcon from "@mui/icons-material/CheckCircleOutlined";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import FireIcon from "@mui/icons-material/LocalFireDepartment";
-import TrendIcon from "@mui/icons-material/TrendingUp";
 import TrophyIcon from "@mui/icons-material/EmojiEvents";
-import CategoryIcon from "@mui/icons-material/Folder";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import healthApi from "../api/healthApi";
 import dashboardApi from "../api/dashboardApi";
 import habitApi from "../api/habitApi";
+import routineApi from "../api/routineApi";
+import goalApi from "../api/goalApi";
 import dayjs from "dayjs";
 import {
   PieChart, Pie, Cell,
@@ -30,23 +36,25 @@ import LevelUpCelebration from "../components/gamification/LevelUpCelebration";
 import { useAuth } from "../contexts/AuthContext";
 import userApi from "../api/userApi";
 import statisticsApi from "../api/statisticsApi";
+import { useNavigate } from "react-router-dom";
+import GoalWizardDialog from "../components/goals/GoalWizardDialog";
 
-/**
- * Dashboard page — main landing page.
- * Shows today's habits, stats overview, and activity summary.
- */
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [backendStatus, setBackendStatus] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [wizardOpen, setWizardOpen] = useState(false);
   const [todayHabits, setTodayHabits] = useState([]);
   const [loadingHabits, setLoadingHabits] = useState(true);
+  const [routine, setRoutine] = useState([]);
+  const [resources, setResources] = useState([]);
+  const [loadingRoutine, setLoadingRoutine] = useState(true);
   const [stats, setStats] = useState(null);
   const [loadingStats, setLoadingStats] = useState(true);
   const [dailyProgress, setDailyProgress] = useState([]);
   const [loadingProgress, setLoadingProgress] = useState(true);
   const [chartFilter, setChartFilter] = useState("daily");
 
-  // Gamification state
   const { user, updateUser } = useAuth();
   const [levelUpData, setLevelUpData] = useState({ open: false, level: 0 });
 
@@ -64,6 +72,7 @@ export default function Dashboard() {
       });
 
     loadTodayHabits();
+    loadRoutineAndResources();
     loadStats();
   }, []);
 
@@ -82,6 +91,35 @@ export default function Dashboard() {
       })
       .catch((err) => console.error("Failed to load today's habits", err))
       .finally(() => setLoadingHabits(false));
+  };
+
+  const loadRoutineAndResources = async () => {
+    try {
+      setLoadingRoutine(true);
+      const [rRes, resRes] = await Promise.all([
+        routineApi.getRoutine(),
+        goalApi.getResources(),
+      ]);
+      const routineList = Array.isArray(rRes) ? rRes : (rRes?.data || []);
+      const resourceList = Array.isArray(resRes) ? resRes : (resRes?.data || []);
+      setRoutine(routineList);
+      setResources(resourceList);
+    } catch (err) {
+      console.error("Failed to load routine data", err);
+      setRoutine([]);
+      setResources([]);
+    } finally {
+      setLoadingRoutine(false);
+    }
+  };
+
+  const handleToggleRoutine = async (id) => {
+    setRoutine((prev) =>
+      prev.map((b) =>
+        b.id === id ? { ...b, isCompletedToday: !b.isCompletedToday } : b
+      )
+    );
+    await routineApi.toggleBlock(id);
   };
 
   const loadStats = () => {
@@ -154,7 +192,6 @@ export default function Dashboard() {
           note: "",
         });
       }
-      // Update local state for immediate feedback
       setTodayHabits((prev) =>
         prev.map((h) => {
           if (h.habit.id === item.habit.id) {
@@ -163,34 +200,30 @@ export default function Dashboard() {
           return h;
         }),
       );
-      // Refresh stats from backend
       loadStats();
       loadDailyProgress();
 
-      // Fetch user progress for gamification
       const progressRes = await userApi.getProgress();
       if (progressRes.data?.success) {
         const newProgress = progressRes.data.data;
         if (user && newProgress.level > user.level) {
-          // Level up!
           setLevelUpData({ open: true, level: newProgress.level });
         }
-        updateUser(newProgress); // Update AuthContext
+        updateUser(newProgress);
       }
     } catch (error) {
       console.error("Failed to toggle habit completion", error);
     }
   };
 
-  // Calculate dynamic stats
-  const completedCount = todayHabits.filter((h) => h.completedToday).length;
-  const totalCount = todayHabits.length;
-  const completionRate =
-    totalCount === 0 ? 0 : Math.round((completedCount / totalCount) * 100);
+  const safeRoutine = Array.isArray(routine) ? routine : [];
+  const completedRoutine = safeRoutine.filter((b) => b.isCompletedToday).length;
+  const totalRoutine = safeRoutine.length;
+  const disciplineScore = totalRoutine > 0 ? Math.round((completedRoutine / totalRoutine) * 100) : 0;
 
   const statCards = [
     {
-      label: "Today's Progress",
+      label: "Today's Habits",
       value: stats ? `${stats.completedToday} / ${stats.totalToday}` : "-",
       icon: CheckIcon,
       color: "#10B981",
@@ -204,10 +237,10 @@ export default function Dashboard() {
       bgColor: "rgba(245, 158, 11, 0.1)",
     },
     {
-      label: "Completion Rate",
-      value: stats ? `${stats.todayCompletionRate}%` : "-",
+      label: "Discipline Score",
+      value: `${disciplineScore}%`,
       isChart: true,
-      chartValue: stats ? stats.todayCompletionRate : 0,
+      chartValue: disciplineScore,
       color: "#8B5CF6",
       bgColor: "rgba(139, 92, 246, 0.1)",
     },
@@ -222,107 +255,70 @@ export default function Dashboard() {
 
   return (
     <Box>
+      <LevelUpCelebration open={levelUpData.open} level={levelUpData.level} onClose={() => setLevelUpData({ open: false, level: 0 })} />
+
       {/* Page Header */}
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h1" sx={{ mb: 1 }}>
-          Dashboard
-        </Typography>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          <Typography variant="body2" color="text.secondary">
-            Welcome to HabitEngine
+      <Box sx={{ mb: 4, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <Box>
+          <Typography variant="h4" fontWeight={800} sx={{ mb: 0.5 }}>
+            Dashboard
           </Typography>
-          {loading ? (
-            <CircularProgress size={14} />
-          ) : (
-            <Chip
-              label={`API: ${backendStatus}`}
-              size="small"
-              color={backendStatus === "UP" ? "success" : "error"}
-              variant="outlined"
-              sx={{ fontSize: "0.7rem", height: 22 }}
-            />
-          )}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+            <Typography variant="body2" color="text.secondary">
+              Welcome back to HabitEngine
+            </Typography>
+            {loading ? (
+              <CircularProgress size={14} />
+            ) : (
+              <Chip
+                label={`API: ${backendStatus}`}
+                size="small"
+                color={backendStatus === "UP" ? "success" : "error"}
+                variant="outlined"
+                sx={{ fontSize: "0.7rem", height: 22 }}
+              />
+            )}
+          </Box>
         </Box>
+        <Button
+          variant="contained"
+          color="secondary"
+          startIcon={<AutoAwesomeIcon />}
+          onClick={() => setWizardOpen(true)}
+          sx={{ borderRadius: 2, fontWeight: 700 }}
+        >
+          🧙 Setup New Goal & Routine Plan
+        </Button>
       </Box>
 
       {/* Stats Grid */}
-      <Grid container spacing={2.5}>
+      <Grid container spacing={2.5} sx={{ mb: 4 }}>
         {statCards.map((stat) => {
           const Icon = stat.icon;
           return (
-            <Grid item xs={12} sm={6} lg={3} key={stat.label}>
-              <Card
-                elevation={0}
-                sx={{
-                  height: "100%",
-                  cursor: "pointer",
-                  "&:hover": {
-                    transform: "translateY(-2px)",
-                  },
-                }}
-              >
+            <Grid size={{ xs: 12, sm: 6, lg: 3 }} key={stat.label}>
+              <Card elevation={0} sx={{ height: "100%", borderRadius: 3, border: "1px solid", borderColor: "divider" }}>
                 <CardContent sx={{ p: 2.5 }}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "flex-start",
-                      mb: 2,
-                    }}
-                  >
+                  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 2 }}>
                     {stat.isChart ? (
-                      <Box
-                        sx={{
-                          width: 44,
-                          height: 44,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
+                      <Box sx={{ width: 44, height: 44, display: "flex", alignItems: "center", justifyContent: "center" }}>
                         <PieChart width={44} height={44}>
-                          <Pie
-                            data={[
-                              { value: stat.chartValue },
-                              { value: 100 - stat.chartValue },
-                            ]}
-                            cx={20}
-                            cy={20}
-                            innerRadius={15}
-                            outerRadius={20}
-                            startAngle={90}
-                            endAngle={-270}
-                            dataKey="value"
-                            stroke="none"
-                          >
+                          <Pie data={[{ value: stat.chartValue }, { value: 100 - stat.chartValue }]} cx={20} cy={20} innerRadius={15} outerRadius={20} startAngle={90} endAngle={-270} dataKey="value" stroke="none">
                             <Cell fill={stat.color} />
                             <Cell fill={stat.bgColor} />
                           </Pie>
                         </PieChart>
                       </Box>
                     ) : (
-                      <Box
-                        sx={{
-                          width: 44,
-                          height: 44,
-                          borderRadius: 2,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          bgcolor: stat.bgColor,
-                        }}
-                      >
+                      <Box sx={{ width: 44, height: 44, borderRadius: 2, display: "flex", alignItems: "center", justifyContent: "center", bgcolor: stat.bgColor }}>
                         <Icon sx={{ color: stat.color, fontSize: "1.4rem" }} />
                       </Box>
                     )}
                   </Box>
-                  <Typography
-                    variant="h4"
-                    sx={{ fontWeight: 700, mb: 0.5, color: stat.color }}
-                  >
+                  <Typography variant="h4" fontWeight={800} sx={{ mb: 0.5 }}>
                     {stat.value}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="caption" color="text.secondary" fontWeight={600}>
                     {stat.label}
                   </Typography>
                 </CardContent>
@@ -332,212 +328,128 @@ export default function Dashboard() {
         })}
       </Grid>
 
-      {/* Daily Progress Chart Section */}
-      <Box sx={{ mt: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h3">
-            Progress ({chartFilter === 'daily' ? 'Last 7 Days' : chartFilter === 'weekly' ? 'Last 4 Weeks' : 'Last 6 Months'})
-          </Typography>
-          <ToggleButtonGroup
-            value={chartFilter}
-            exclusive
-            onChange={(e, newVal) => { if(newVal) setChartFilter(newVal); }}
-            size="small"
-            sx={{ bgcolor: 'background.paper' }}
-          >
-            <ToggleButton value="daily">Daily</ToggleButton>
-            <ToggleButton value="weekly">Weekly</ToggleButton>
-            <ToggleButton value="monthly">Monthly</ToggleButton>
-          </ToggleButtonGroup>
+      {/* Today's Schedule & Routine Section */}
+      <Card elevation={0} sx={{ mb: 4, p: 3, borderRadius: 3, border: "1px solid", borderColor: "divider" }}>
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <AccessTimeIcon color="primary" />
+            <Typography variant="h6" fontWeight={800}>
+              Today's Routine & Schedule
+            </Typography>
+          </Box>
+          <Button size="small" onClick={() => navigate("/routine")} sx={{ fontWeight: 700 }}>
+            Manage Routine →
+          </Button>
         </Box>
-        <Card elevation={0}>
-          <CardContent sx={{ p: 4 }}>
+
+        {loadingRoutine ? (
+          <CircularProgress size={20} />
+        ) : routine.length === 0 ? (
+          <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
+            No time blocks configured for today. Click "Manage Routine" to create your day's schedule!
+          </Typography>
+        ) : (
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+            {routine.map((block) => (
+              <Box
+                key={block.id}
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  p: 1.5,
+                  borderRadius: 2,
+                  bgcolor: block.isCompletedToday ? "action.selected" : "background.paper",
+                  border: "1px solid",
+                  borderColor: block.isCompletedToday ? "success.light" : "divider",
+                }}
+              >
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                  <Checkbox
+                    checked={block.isCompletedToday}
+                    onChange={() => handleToggleRoutine(block.id)}
+                    icon={<RadioButtonUncheckedIcon fontSize="small" />}
+                    checkedIcon={<CheckCircleIcon fontSize="small" color="success" />}
+                  />
+                  <Box>
+                    <Typography variant="body1" fontWeight={700} sx={{ textDecoration: block.isCompletedToday ? "line-through" : "none" }}>
+                      {block.title}
+                    </Typography>
+                    <Chip label={`${block.startTime.substring(0, 5)} - ${block.endTime.substring(0, 5)}`} size="small" sx={{ fontSize: "0.65rem", height: 18, mr: 1 }} />
+                    <Chip label={block.category} size="small" color="primary" variant="outlined" sx={{ fontSize: "0.65rem", height: 18 }} />
+                  </Box>
+                </Box>
+              </Box>
+            ))}
+          </Box>
+        )}
+      </Card>
+
+      {/* Progress Chart & Today's Habits */}
+      <Grid container spacing={3}>
+        {/* Progress Chart */}
+        <Grid size={{ xs: 12, lg: 7 }}>
+          <Card elevation={0} sx={{ p: 3, borderRadius: 3, border: "1px solid", borderColor: "divider", height: "100%" }}>
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+              <Typography variant="h6" fontWeight={800}>
+                Habit Completion Trend
+              </Typography>
+              <ToggleButtonGroup value={chartFilter} exclusive onChange={(e, val) => val && setChartFilter(val)} size="small">
+                <ToggleButton value="daily">Daily</ToggleButton>
+                <ToggleButton value="weekly">Weekly</ToggleButton>
+                <ToggleButton value="monthly">Monthly</ToggleButton>
+              </ToggleButtonGroup>
+            </Box>
             {loadingProgress ? (
-              <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
+              <Box sx={{ display: "flex", justifyContent: "center", p: 5 }}>
                 <CircularProgress />
               </Box>
             ) : (
-              <Box sx={{ width: "100%", height: 300 }}>
-                <ResponsiveContainer>
-                  <LineChart
-                    data={dailyProgress}
-                    margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-                  >
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      vertical={false}
-                      stroke="#E5E7EB"
-                    />
-                    <XAxis
-                      dataKey="label"
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fill: "#6B7280", fontSize: 12 }}
-                      dy={10}
-                    />
-                    <YAxis
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fill: "#6B7280", fontSize: 12 }}
-                      allowDecimals={false}
-                    />
-                    <RechartsTooltip
-                      contentStyle={{
-                        borderRadius: 8,
-                        border: "none",
-                        boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
-                      }}
-                      formatter={(value) => [value, "Completed Habits"]}
-                      labelStyle={{
-                        color: "#374151",
-                        fontWeight: 600,
-                        marginBottom: 4,
-                      }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="completedCount"
-                      stroke="#10B981"
-                      strokeWidth={3}
-                      dot={{ r: 4, fill: "#10B981", strokeWidth: 0 }}
-                      activeDot={{
-                        r: 6,
-                        fill: "#10B981",
-                        stroke: "#fff",
-                        strokeWidth: 2,
-                      }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </Box>
+              <ResponsiveContainer width="100%" height={260}>
+                <LineChart data={dailyProgress}>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                  <XAxis dataKey="label" />
+                  <YAxis allowDecimals={false} />
+                  <RechartsTooltip />
+                  <Line type="monotone" dataKey="completedCount" stroke="#8B5CF6" strokeWidth={3} dot={{ r: 4 }} />
+                </LineChart>
+              </ResponsiveContainer>
             )}
-          </CardContent>
-        </Card>
-      </Box>
-
-      {/* Today's Habits Section */}
-      <Box sx={{ mt: 4 }}>
-        <Typography variant="h3" sx={{ mb: 2 }}>
-          Today&apos;s Habits
-        </Typography>
-
-        {loadingHabits ? (
-          <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
-            <CircularProgress />
-          </Box>
-        ) : todayHabits.length === 0 ? (
-          <Card elevation={0}>
-            <CardContent
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                py: 6,
-              }}
-            >
-              <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
-                No habits to track today
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Head over to the Habits page to create one!
-              </Typography>
-            </CardContent>
           </Card>
-        ) : (
-          <Grid container spacing={2}>
-            {todayHabits.map((item) => (
-              <Grid item xs={12} md={6} key={item.habit.id}>
-                <Card
-                  elevation={0}
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    p: 2,
-                    borderLeft: `5px solid ${item.habit.category?.color || "#8B5CF6"}`,
-                    opacity: item.completedToday ? 0.7 : 1,
-                    transition: "all 0.2s",
-                    "&:hover": {
-                      bgcolor: "action.hover",
-                    },
-                  }}
-                >
-                  <Box sx={{ flexGrow: 1 }}>
-                    <Typography
-                      variant="h6"
-                      sx={{
-                        fontWeight: 600,
-                        textDecoration: item.completedToday
-                          ? "line-through"
-                          : "none",
-                        color: item.completedToday
-                          ? "text.secondary"
-                          : "text.primary",
-                      }}
-                    >
-                      {item.habit.name}
-                    </Typography>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 1,
-                        mt: 0.5,
-                      }}
-                    >
-                      <CategoryIcon
-                        sx={{
-                          fontSize: "0.9rem",
-                          color: item.habit.category?.color || "#8B5CF6",
-                        }}
-                      />
-                      <Typography variant="caption" color="text.secondary">
-                        {item.habit.category?.name || "Uncategorized"}
+        </Grid>
+
+        {/* Today's Habits */}
+        <Grid size={{ xs: 12, lg: 5 }}>
+          <Card elevation={0} sx={{ p: 3, borderRadius: 3, border: "1px solid", borderColor: "divider", height: "100%" }}>
+            <Typography variant="h6" fontWeight={800} sx={{ mb: 2 }}>
+              Today's Habits Checklist
+            </Typography>
+            {loadingHabits ? (
+              <CircularProgress size={20} />
+            ) : todayHabits.length === 0 ? (
+              <Typography variant="body2" color="text.secondary">
+                No active habits configured for today.
+              </Typography>
+            ) : (
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+                {todayHabits.map((item) => (
+                  <Box key={item.habit.id} sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", p: 1.5, borderRadius: 2, bgcolor: "action.hover" }}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                      <Checkbox checked={item.completedToday} onChange={() => handleToggleCompletion(item)} icon={<RadioButtonUncheckedIcon fontSize="small" />} checkedIcon={<CheckCircleIcon fontSize="small" color="success" />} />
+                      <Typography variant="body2" fontWeight={700} sx={{ textDecoration: item.completedToday ? "line-through" : "none" }}>
+                        {item.habit.name}
                       </Typography>
-                      {item.habit.streak?.currentStreak > 0 && (
-                        <Chip
-                          icon={
-                            <FireIcon
-                              sx={{ fontSize: "1rem", color: "#F59E0B" }}
-                            />
-                          }
-                          label={`${item.habit.streak.currentStreak} Day Streak`}
-                          size="small"
-                          sx={{
-                            height: 20,
-                            fontSize: "0.7rem",
-                            bgcolor: "rgba(245, 158, 11, 0.1)",
-                            color: "#F59E0B",
-                            fontWeight: 600,
-                            ml: 1,
-                          }}
-                        />
-                      )}
                     </Box>
                   </Box>
-                  <IconButton
-                    onClick={() => handleToggleCompletion(item)}
-                    color={item.completedToday ? "success" : "default"}
-                    sx={{ p: 1 }}
-                  >
-                    {item.completedToday ? (
-                      <CheckCircleIcon sx={{ fontSize: "2rem" }} />
-                    ) : (
-                      <RadioButtonUncheckedIcon sx={{ fontSize: "2rem" }} />
-                    )}
-                  </IconButton>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        )}
-      </Box>
+                ))}
+              </Box>
+            )}
+          </Card>
+        </Grid>
+      </Grid>
 
-      {/* Level Up Celebration Dialog */}
-      <LevelUpCelebration
-        open={levelUpData.open}
-        level={levelUpData.level}
-        onClose={() => setLevelUpData({ ...levelUpData, open: false })}
-      />
+      {/* Master Goal Wizard */}
+      <GoalWizardDialog open={wizardOpen} onClose={() => setWizardOpen(false)} onSuccess={loadRoutineAndResources} />
     </Box>
   );
 }

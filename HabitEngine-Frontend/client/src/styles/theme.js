@@ -125,7 +125,7 @@ export const darkTheme = createTheme({
     },
     text: {
       primary: "#F1F5F9",
-      secondary: "#94A3B8",
+      secondary: "#CBD5E1",
     },
     divider: "rgba(148, 163, 184, 0.12)",
   },
@@ -140,10 +140,11 @@ export const darkTheme = createTheme({
         root: {
           borderRadius: 16,
           backgroundImage: "none",
-          border: "1px solid rgba(139, 92, 246, 0.08)",
+          border: "1px solid rgba(255, 255, 255, 0.05)",
+          boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
           transition: "box-shadow 0.3s ease, transform 0.2s ease",
           "&:hover": {
-            boxShadow: "0 8px 32px rgba(139, 92, 246, 0.15)",
+            boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
           },
         },
       },

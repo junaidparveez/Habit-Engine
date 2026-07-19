@@ -183,7 +183,7 @@ export default function HabitsPage() {
         /* Habit Cards Grid */
         <Grid container spacing={3}>
           {habits.map((habit) => (
-            <Grid item xs={12} sm={6} lg={4} key={habit.id}>
+            <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={habit.id}>
               <HabitCard
                 habit={habit}
                 onEdit={handleEditOpen}

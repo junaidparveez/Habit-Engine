@@ -14,6 +14,7 @@ const Dashboard = lazy(() => import("../pages/Dashboard"));
 const HabitsPage = lazy(() => import("../pages/HabitsPage"));
 const StatisticsPage = lazy(() => import("../pages/StatisticsPage"));
 const GoalsPage = lazy(() => import("../pages/GoalsPage"));
+const RoutinePage = lazy(() => import("../pages/RoutinePage"));
 const SettingsPage = lazy(() => import("../pages/SettingsPage"));
 const SocialPage = lazy(() => import("../pages/SocialPage"));
 const GroupDashboardPage = lazy(() => import("../pages/GroupDashboardPage"));
@@ -79,6 +80,14 @@ const router = createBrowserRouter([
             element: (
               <Suspense fallback={<PageLoader />}>
                 <GoalsPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: ROUTES.ROUTINE,
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <RoutinePage />
               </Suspense>
             ),
           },
