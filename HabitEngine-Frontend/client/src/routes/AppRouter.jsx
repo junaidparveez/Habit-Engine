@@ -18,6 +18,7 @@ const RoutinePage = lazy(() => import("../pages/RoutinePage"));
 const SettingsPage = lazy(() => import("../pages/SettingsPage"));
 const SocialPage = lazy(() => import("../pages/SocialPage"));
 const GroupDashboardPage = lazy(() => import("../pages/GroupDashboardPage"));
+const AiPlannerPage = lazy(() => import("../pages/AiPlannerPage"));
 const DirectMessagePage = lazy(() => import("../pages/DirectMessagePage"));
 
 const PageLoader = () => (
@@ -120,6 +121,14 @@ const router = createBrowserRouter([
             element: (
               <Suspense fallback={<PageLoader />}>
                 <DirectMessagePage />
+              </Suspense>
+            ),
+          },
+          {
+            path: ROUTES.AI,
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <AiPlannerPage />
               </Suspense>
             ),
           },

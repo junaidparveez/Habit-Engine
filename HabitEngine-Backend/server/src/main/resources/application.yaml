@@ -34,10 +34,17 @@ spring:
     default-property-inclusion: non_null
     time-zone: UTC
 
-  # --- Spring AI (disabled until API key is configured) ---
+  # --- Spring AI ---
   ai:
+    tavily:
+      api-key: ********
     openai:
-      api-key: ${OPENAI_API_KEY:not-configured}
+      api-key: ${OPENAI_API_KEY:********}
+      chat:
+        options:
+          model: gpt-4.1
+          temperature: 0.7
+          max-tokens: 6000
 
   # --- Mail (deferred to Milestone 11) ---
   mail:

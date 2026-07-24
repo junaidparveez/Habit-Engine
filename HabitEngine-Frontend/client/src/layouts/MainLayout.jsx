@@ -30,13 +30,13 @@ import MenuIcon from "@mui/icons-material/Menu";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import GroupIcon from "@mui/icons-material/Group";
-import FireIcon from "@mui/icons-material/LocalFireDepartment";
+import RocketLaunchIcon from "@mui/icons-material/RocketLaunch";
 import LogoutIcon from "@mui/icons-material/Logout";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import { DRAWER_WIDTH, NAV_ITEMS } from "../constants";
 import { useThemeMode } from "../contexts/ThemeContext";
 import { useAuth } from "../contexts/AuthContext";
-import UserProgressWidget from "../components/gamification/UserProgressWidget";
 import useWebSocket from "../hooks/useWebSocket";
 
 const iconMap = {
@@ -47,6 +47,7 @@ const iconMap = {
   Flag: GoalsIcon,
   Group: GroupIcon,
   Settings: SettingsIcon,
+  AutoAwesome: AutoAwesomeIcon,
 };
 
 /**
@@ -117,7 +118,7 @@ export default function MainLayout() {
             fontSize: "1.2rem",
           }}
         >
-          <FireIcon fontSize="small" />
+          <RocketLaunchIcon fontSize="small" />
         </Avatar>
         <Box>
           <Typography
@@ -131,89 +132,140 @@ export default function MainLayout() {
               WebkitTextFillColor: "transparent",
             }}
           >
-            HabitEngine
+            LevelUp
           </Typography>
-          <Typography
-            variant="caption"
-            sx={{ color: "text.secondary", fontSize: "0.7rem" }}
-          >
-            Build better habits
-          </Typography>
+            <Typography
+              variant="caption"
+              sx={{ color: "text.secondary", fontSize: "0.7rem" }}
+            >
+              Level up your life
+            </Typography>
         </Box>
       </Box>
 
       <Divider sx={{ mx: 2 }} />
 
       {/* Navigation Items */}
-      <List sx={{ flex: 1, px: 1.5, py: 1.5 }}>
-        {NAV_ITEMS.map((item) => {
-          const Icon = iconMap[item.icon];
-          const isActive = location.pathname === item.path;
+      <List sx={{ flex: 1, px: 1.5, py: 1.5, overflowY: "auto" }}>
+        {Object.entries(
+          NAV_ITEMS.reduce((acc, item) => {
+            if (!acc[item.section]) acc[item.section] = [];
+            acc[item.section].push(item);
+            return acc;
+          }, {})
+        ).map(([section, items]) => (
+          <Box key={section} sx={{ mb: 2.5 }}>
+            <Typography
+              variant="overline"
+              sx={{
+                px: 2,
+                fontSize: "0.65rem",
+                fontWeight: 700,
+                letterSpacing: "0.08em",
+                color: "text.secondary",
+                opacity: 0.7,
+                display: "block",
+                mb: 0.5,
+              }}
+            >
+              {section}
+            </Typography>
+            {items.map((item) => {
+              const Icon = iconMap[item.icon];
+              const isActive = location.pathname === item.path;
 
-          return (
-            <ListItem key={item.path} disablePadding sx={{ mb: 0.5 }}>
-              <ListItemButton
-                onClick={() => handleNavClick(item.path)}
-                sx={{
-                  position: "relative",
-                  borderRadius: 2,
-                  py: 1.2,
-                  px: 2,
-                  bgcolor: isActive
-                    ? "rgba(139, 92, 246, 0.12)"
-                    : "transparent",
-                  color: isActive ? "primary.main" : "text.secondary",
-                  "&:hover": {
-                    bgcolor: isActive
-                      ? "rgba(139, 92, 246, 0.18)"
-                      : "action.hover",
-                  },
-                  transition: "all 0.2s ease",
-                }}
-              >
-                {isActive && (
-                  <Box
+              return (
+                <ListItem key={item.path} disablePadding sx={{ mb: 0.5 }}>
+                  <ListItemButton
+                    onClick={() => handleNavClick(item.path)}
                     sx={{
-                      position: "absolute",
-                      left: 0,
-                      width: 4,
-                      height: 20,
-                      borderRadius: "0 4px 4px 0",
-                      bgcolor: "primary.main",
+                      position: "relative",
+                      borderRadius: 2,
+                      py: 1.2,
+                      px: 2,
+                      bgcolor: isActive
+                        ? "rgba(139, 92, 246, 0.12)"
+                        : "transparent",
+                      color: isActive ? "primary.main" : "text.secondary",
+                      "&:hover": {
+                        bgcolor: isActive
+                          ? "rgba(139, 92, 246, 0.18)"
+                          : "action.hover",
+                      },
+                      transition: "all 0.2s ease",
                     }}
-                  />
-                )}
-                <ListItemIcon
-                  sx={{
-                    minWidth: 40,
-                    color: isActive ? "primary.main" : "text.secondary",
-                  }}
-                >
-                  <Icon fontSize="small" />
-                </ListItemIcon>
-                <ListItemText
-                  primary={
-                    <Typography
-                      variant="body2"
+                  >
+                    {isActive && (
+                      <Box
+                        sx={{
+                          position: "absolute",
+                          left: 0,
+                          top: "50%",
+                          transform: "translateY(-50%)",
+                          width: 4,
+                          height: "60%",
+                          borderRadius: "0 4px 4px 0",
+                          background: "linear-gradient(180deg, #8B5CF6, #06B6D4)",
+                        }}
+                      />
+                    )}
+                    <ListItemIcon
                       sx={{
-                        fontWeight: isActive ? 600 : 400,
-                        fontSize: "0.875rem",
+                        minWidth: 40,
+                        color: isActive ? "primary.main" : "text.secondary",
                       }}
                     >
-                      {item.label}
-                    </Typography>
-                  }
-                />
-              </ListItemButton>
-            </ListItem>
-          );
-        })}
+                      <Icon fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            fontWeight: isActive ? 700 : 500,
+                            fontSize: "0.875rem",
+                          }}
+                        >
+                          {item.label}
+                        </Typography>
+                      }
+                    />
+                  </ListItemButton>
+                </ListItem>
+              );
+            })}
+          </Box>
+        ))}
       </List>
 
       <Divider sx={{ mx: 2 }} />
 
       <Box sx={{ p: 2, mt: "auto" }}>
-        <UserProgressWidget />
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, p: 1.5, borderRadius: 2, bgcolor: "action.hover", border: "1px solid", borderColor: "divider" }}>
+          <Avatar sx={{ width: 36, height: 36, background: "linear-gradient(135deg, #8B5CF6, #06B6D4)", fontSize: "1rem", fontWeight: "bold" }}>
+            {getInitials()}
+          </Avatar>
+          <Box sx={{ flex: 1, overflow: "hidden" }}>
+            <Typography variant="body2" fontWeight={700} noWrap>
+              {user?.displayName || user?.username || "Champ"}
+            </Typography>
+            <Typography variant="caption" color="text.secondary" noWrap sx={{ display: "block", fontSize: "0.65rem", fontWeight: 600 }}>
+              Level {user?.level || 1} • {user?.currentXp || 0}/{user?.nextLevelXp || 100} XP
+            </Typography>
+          </Box>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+            <Tooltip title="Settings">
+              <IconButton size="small" onClick={() => navigate("/settings")} sx={{ width: 24, height: 24, color: "text.secondary" }}>
+                <SettingsIcon sx={{ fontSize: "1.1rem" }} />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Logout">
+              <IconButton size="small" onClick={logout} sx={{ width: 24, height: 24, color: "error.main" }}>
+                <LogoutIcon sx={{ fontSize: "1.1rem" }} />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        </Box>
       </Box>
     </Box>
   );
@@ -250,7 +302,7 @@ export default function MainLayout() {
                 WebkitTextFillColor: "transparent",
               }}
             >
-              HabitEngine
+              LevelUp
             </Typography>
             <Tooltip title={mode === "dark" ? "Light mode" : "Dark mode"}>
               <IconButton onClick={toggleTheme} sx={{ color: "text.primary" }}>

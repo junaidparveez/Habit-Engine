@@ -27,6 +27,7 @@ import SecurityIcon from "@mui/icons-material/Security";
 import PaletteIcon from "@mui/icons-material/Palette";
 import LogoutIcon from "@mui/icons-material/Logout";
 import SaveIcon from "@mui/icons-material/Save";
+import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import { useAuth } from "../contexts/AuthContext";
 import { useThemeMode } from "../contexts/ThemeContext";
 import profileApi from "../api/profileApi";
@@ -55,6 +56,8 @@ export default function SettingsPage() {
   // Profile state
   const [displayName, setDisplayName] = useState(user?.displayName || "");
   const [savingProfile, setSavingProfile] = useState(false);
+  
+  const isProfileChanged = displayName !== (user?.displayName || "");
 
   // Notifications state
   const [notifPrefs, setNotifPrefs] = useState({
@@ -133,7 +136,7 @@ export default function SettingsPage() {
       .slice(0, 2);
   };
 
-  const sectionCard = (children) => (
+  const sectionCard = (children, actionButton = null) => (
     <Card
       elevation={0}
       sx={{
@@ -143,12 +146,19 @@ export default function SettingsPage() {
         overflow: "visible",
       }}
     >
-      <CardContent sx={{ p: 3 }}>{children}</CardContent>
+      <CardContent sx={{ p: { xs: 3, sm: 4 }, display: "flex", flexDirection: "column", gap: 3 }}>
+        {children}
+        {actionButton && (
+          <Box sx={{ mt: 1 }}>
+            {actionButton}
+          </Box>
+        )}
+      </CardContent>
     </Card>
   );
 
   return (
-    <Box>
+    <Box sx={{ maxWidth: 800, mx: "auto", width: "100%" }}>
       {/* Page Header */}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h1" sx={{ mb: 0.5 }}>
@@ -164,21 +174,40 @@ export default function SettingsPage() {
         <Tabs
           value={activeTab}
           onChange={(_, v) => setActiveTab(v)}
+          variant="scrollable"
+          scrollButtons="auto"
           sx={{
-            "& .MuiTab-root": { textTransform: "none", fontWeight: 500 },
+            minHeight: 48,
+            "& .MuiTabs-indicator": {
+              height: "100%",
+              borderRadius: 2,
+              backgroundColor: mode === "dark" ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.04)",
+              zIndex: 0,
+              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            },
+            "& .MuiTab-root": { 
+              textTransform: "none", 
+              fontWeight: 500,
+              minHeight: 48,
+              zIndex: 1,
+              px: 3,
+              mx: 0.5,
+              borderRadius: 2,
+              transition: "color 0.3s",
+            },
             "& .Mui-selected": { color: "primary.main" },
           }}
         >
-          <Tab icon={<PersonIcon />} iconPosition="start" label="Profile" />
-          <Tab icon={<NotificationsIcon />} iconPosition="start" label="Notifications" />
-          <Tab icon={<PaletteIcon />} iconPosition="start" label="Appearance" />
-          <Tab icon={<SecurityIcon />} iconPosition="start" label="Account" />
+          <Tab icon={<PersonIcon />} iconPosition="start" label="Profile" disableRipple />
+          <Tab icon={<NotificationsIcon />} iconPosition="start" label="Notifications" disableRipple />
+          <Tab icon={<PaletteIcon />} iconPosition="start" label="Appearance" disableRipple />
+          <Tab icon={<SecurityIcon />} iconPosition="start" label="Account" disableRipple />
         </Tabs>
       </Box>
 
       {/* Profile Tab */}
       <TabPanel value={activeTab} index={0}>
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 3, maxWidth: 600 }}>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
           {sectionCard(
             <Box>
               <Typography variant="h6" fontWeight="bold" sx={{ mb: 3 }}>
@@ -186,18 +215,36 @@ export default function SettingsPage() {
               </Typography>
 
               {/* Avatar */}
-              <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 4 }}>
-                <Avatar
-                  sx={{
-                    width: 72,
-                    height: 72,
-                    fontSize: "1.6rem",
-                    fontWeight: "bold",
-                    background: "linear-gradient(135deg, #8B5CF6, #06B6D4)",
-                  }}
-                >
-                  {getInitials()}
-                </Avatar>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 3, mb: 4 }}>
+                <Box sx={{ position: "relative", cursor: "pointer", "&:hover .avatar-overlay": { opacity: 1 } }}>
+                  <Avatar
+                    sx={{
+                      width: 80,
+                      height: 80,
+                      fontSize: "2rem",
+                      fontWeight: "bold",
+                      background: "linear-gradient(135deg, #8B5CF6, #06B6D4)",
+                    }}
+                  >
+                    {getInitials()}
+                  </Avatar>
+                  <Box
+                    className="avatar-overlay"
+                    sx={{
+                      position: "absolute",
+                      top: 0, left: 0, right: 0, bottom: 0,
+                      backgroundColor: "rgba(0,0,0,0.5)",
+                      borderRadius: "50%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      opacity: 0,
+                      transition: "opacity 0.2s ease-in-out"
+                    }}
+                  >
+                    <PhotoCameraIcon sx={{ color: "#fff" }} />
+                  </Box>
+                </Box>
                 <Box>
                   <Typography fontWeight="bold">{user?.displayName || user?.username}</Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -209,7 +256,7 @@ export default function SettingsPage() {
                 </Box>
               </Box>
 
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
                 <TextField
                   label="Display Name"
                   value={displayName}
@@ -217,6 +264,13 @@ export default function SettingsPage() {
                   fullWidth
                   variant="outlined"
                   helperText="This is how your name appears in the app"
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      "&:hover fieldset": { borderColor: "primary.main" },
+                      "&.Mui-focused fieldset": { borderWidth: "2px", borderColor: "primary.main" },
+                    },
+                    "& .MuiFormHelperText-root": { color: mode === "dark" ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)" }
+                  }}
                 />
                 <TextField
                   label="Username"
@@ -225,6 +279,19 @@ export default function SettingsPage() {
                   variant="outlined"
                   disabled
                   helperText="Username cannot be changed"
+                  InputProps={{
+                    endAdornment: <Typography sx={{ mr: 1 }}>🔒</Typography>,
+                  }}
+                  sx={{
+                    "& .MuiInputBase-root.Mui-disabled": {
+                      backgroundColor: mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)",
+                      opacity: 1
+                    },
+                    "& .MuiInputBase-input.Mui-disabled": {
+                      WebkitTextFillColor: mode === "dark" ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)"
+                    },
+                    "& .MuiFormHelperText-root": { color: mode === "dark" ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)" }
+                  }}
                 />
                 <TextField
                   label="Email"
@@ -233,33 +300,45 @@ export default function SettingsPage() {
                   variant="outlined"
                   disabled
                   helperText="Email cannot be changed"
+                  InputProps={{
+                    endAdornment: <Typography sx={{ mr: 1 }}>🔒</Typography>,
+                  }}
+                  sx={{
+                    "& .MuiInputBase-root.Mui-disabled": {
+                      backgroundColor: mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)",
+                      opacity: 1
+                    },
+                    "& .MuiInputBase-input.Mui-disabled": {
+                      WebkitTextFillColor: mode === "dark" ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)"
+                    },
+                    "& .MuiFormHelperText-root": { color: mode === "dark" ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)" }
+                  }}
                 />
               </Box>
-            </Box>
+            </Box>,
+            <Button
+              variant="contained"
+              startIcon={savingProfile ? <CircularProgress size={18} color="inherit" /> : <SaveIcon />}
+              onClick={handleSaveProfile}
+              disabled={savingProfile || !isProfileChanged}
+              sx={{
+                borderRadius: 2,
+                px: 4,
+                py: 1.2,
+                background: (!savingProfile && isProfileChanged) ? "linear-gradient(135deg, #8B5CF6, #7C3AED)" : undefined,
+                alignSelf: "flex-start",
+                "&:hover": { background: (!savingProfile && isProfileChanged) ? "linear-gradient(135deg, #7C3AED, #6D28D9)" : undefined },
+              }}
+            >
+              {savingProfile ? "Saving..." : "Save Profile"}
+            </Button>
           )}
-
-          <Button
-            variant="contained"
-            startIcon={savingProfile ? <CircularProgress size={18} color="inherit" /> : <SaveIcon />}
-            onClick={handleSaveProfile}
-            disabled={savingProfile}
-            sx={{
-              borderRadius: 2,
-              px: 4,
-              py: 1.2,
-              background: "linear-gradient(135deg, #8B5CF6, #7C3AED)",
-              alignSelf: "flex-start",
-              "&:hover": { background: "linear-gradient(135deg, #7C3AED, #6D28D9)" },
-            }}
-          >
-            {savingProfile ? "Saving..." : "Save Profile"}
-          </Button>
         </Box>
       </TabPanel>
 
       {/* Notifications Tab */}
       <TabPanel value={activeTab} index={1}>
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 3, maxWidth: 600 }}>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
           {loadingNotif ? (
             <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
               <CircularProgress />
@@ -328,32 +407,31 @@ export default function SettingsPage() {
                     enable this feature.
                   </Alert>
                 </Box>
-              </Box>
+              </Box>,
+              <Button
+                variant="contained"
+                startIcon={savingNotif ? <CircularProgress size={18} color="inherit" /> : <SaveIcon />}
+                onClick={handleSaveNotifications}
+                disabled={savingNotif || loadingNotif}
+                sx={{
+                  borderRadius: 2,
+                  px: 4,
+                  py: 1.2,
+                  background: (!savingNotif && !loadingNotif) ? "linear-gradient(135deg, #8B5CF6, #7C3AED)" : undefined,
+                  alignSelf: "flex-start",
+                  "&:hover": { background: (!savingNotif && !loadingNotif) ? "linear-gradient(135deg, #7C3AED, #6D28D9)" : undefined },
+                }}
+              >
+                {savingNotif ? "Saving..." : "Save Notifications"}
+              </Button>
             )
           )}
-
-          <Button
-            variant="contained"
-            startIcon={savingNotif ? <CircularProgress size={18} color="inherit" /> : <SaveIcon />}
-            onClick={handleSaveNotifications}
-            disabled={savingNotif || loadingNotif}
-            sx={{
-              borderRadius: 2,
-              px: 4,
-              py: 1.2,
-              background: "linear-gradient(135deg, #8B5CF6, #7C3AED)",
-              alignSelf: "flex-start",
-              "&:hover": { background: "linear-gradient(135deg, #7C3AED, #6D28D9)" },
-            }}
-          >
-            {savingNotif ? "Saving..." : "Save Notifications"}
-          </Button>
         </Box>
       </TabPanel>
 
       {/* Appearance Tab */}
       <TabPanel value={activeTab} index={2}>
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 3, maxWidth: 600 }}>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
           {sectionCard(
             <Box>
               <Typography variant="h6" fontWeight="bold" sx={{ mb: 3 }}>
@@ -408,7 +486,7 @@ export default function SettingsPage() {
 
       {/* Account Tab */}
       <TabPanel value={activeTab} index={3}>
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 3, maxWidth: 600 }}>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
           {sectionCard(
             <Box>
               <Typography variant="h6" fontWeight="bold" sx={{ mb: 1 }}>
