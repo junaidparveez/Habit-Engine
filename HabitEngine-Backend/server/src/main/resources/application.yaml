@@ -37,9 +37,9 @@ spring:
   # --- Spring AI ---
   ai:
     tavily:
-      api-key: ********
+      api-key: ${TAVILY_API_KEY: configureone}
     openai:
-      api-key: ${OPENAI_API_KEY:********}
+      api-key: ${OPENAI_API_KEY: configureone}
       chat:
         options:
           model: gpt-4.1
