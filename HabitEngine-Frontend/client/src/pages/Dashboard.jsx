@@ -22,6 +22,7 @@ import TrophyIcon from "@mui/icons-material/EmojiEvents";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import healthApi from "../api/healthApi";
 import dashboardApi from "../api/dashboardApi";
 import habitApi from "../api/habitApi";
@@ -227,14 +228,14 @@ export default function Dashboard() {
       value: stats ? `${stats.completedToday} / ${stats.totalToday}` : "-",
       icon: CheckIcon,
       color: "#10B981",
-      bgColor: "rgba(16, 185, 129, 0.1)",
+      bgColor: "rgba(16, 185, 129, 0.15)",
     },
     {
       label: "Current Streak",
       value: stats ? `${stats.globalCurrentStreak} days` : "-",
       icon: FireIcon,
       color: "#F59E0B",
-      bgColor: "rgba(245, 158, 11, 0.1)",
+      bgColor: "rgba(245, 158, 11, 0.15)",
     },
     {
       label: "Discipline Score",
@@ -242,14 +243,14 @@ export default function Dashboard() {
       isChart: true,
       chartValue: disciplineScore,
       color: "#8B5CF6",
-      bgColor: "rgba(139, 92, 246, 0.1)",
+      bgColor: "rgba(139, 92, 246, 0.15)",
     },
     {
       label: "Total XP",
       value: stats ? `${stats.totalXp}` : "-",
       icon: TrophyIcon,
       color: "#06B6D4",
-      bgColor: "rgba(6, 182, 212, 0.1)",
+      bgColor: "rgba(6, 182, 212, 0.15)",
     },
   ];
 
@@ -265,27 +266,21 @@ export default function Dashboard() {
           </Typography>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
             <Typography variant="body2" color="text.secondary">
-              Welcome back to HabitEngine
+              Welcome back to LevelUp
             </Typography>
-            {loading ? (
-              <CircularProgress size={14} />
-            ) : (
-              <Chip
-                label={`API: ${backendStatus}`}
-                size="small"
-                color={backendStatus === "UP" ? "success" : "error"}
-                variant="outlined"
-                sx={{ fontSize: "0.7rem", height: 22 }}
-              />
-            )}
           </Box>
         </Box>
         <Button
           variant="contained"
-          color="secondary"
           startIcon={<AutoAwesomeIcon />}
           onClick={() => setWizardOpen(true)}
-          sx={{ borderRadius: 2, fontWeight: 700 }}
+          sx={{
+            borderRadius: 2,
+            fontWeight: 700,
+            background: "linear-gradient(135deg, #8B5CF6, #06B6D4)",
+            color: "#fff",
+            "&:hover": { background: "linear-gradient(135deg, #7C3AED, #0891B2)" }
+          }}
         >
           🧙 Setup New Goal & Routine Plan
         </Button>
@@ -321,6 +316,14 @@ export default function Dashboard() {
                   <Typography variant="caption" color="text.secondary" fontWeight={600}>
                     {stat.label}
                   </Typography>
+                  {stat.label === "Total XP" && (
+                    <Box sx={{ mt: 1.5 }}>
+                      <LinearProgress variant="determinate" value={user ? (user.currentXp / (user.nextLevelXp || 100)) * 100 : 0} sx={{ height: 6, borderRadius: 3, bgcolor: "action.hover", "& .MuiLinearProgress-bar": { background: "linear-gradient(90deg, #06B6D4, #8B5CF6)", borderRadius: 3 } }} />
+                      <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5, fontSize: "0.65rem", textAlign: "right", fontWeight: 600 }}>
+                        {user?.currentXp || 0} / {user?.nextLevelXp || 100} XP
+                      </Typography>
+                    </Box>
+                  )}
                 </CardContent>
               </Card>
             </Grid>
@@ -345,9 +348,17 @@ export default function Dashboard() {
         {loadingRoutine ? (
           <CircularProgress size={20} />
         ) : routine.length === 0 ? (
-          <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
-            No time blocks configured for today. Click "Manage Routine" to create your day's schedule!
-          </Typography>
+          <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", py: 4, gap: 1.5, bgcolor: "action.hover", borderRadius: 2, border: "1px dashed", borderColor: "divider" }}>
+            <Box sx={{ width: 48, height: 48, borderRadius: "50%", bgcolor: "rgba(139, 92, 246, 0.15)", color: "primary.main", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <AccessTimeIcon />
+            </Box>
+            <Typography variant="body1" fontWeight={600}>
+              Set up your daily focus blocks
+            </Typography>
+            <Button variant="contained" size="small" onClick={() => navigate("/routine")} sx={{ mt: 1, borderRadius: 2, fontWeight: 600 }}>
+              Create Schedule
+            </Button>
+          </Box>
         ) : (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
             {routine.map((block) => (
@@ -404,6 +415,15 @@ export default function Dashboard() {
               <Box sx={{ display: "flex", justifyContent: "center", p: 5 }}>
                 <CircularProgress />
               </Box>
+            ) : dailyProgress.length === 0 || dailyProgress.every(d => d.completedCount === 0) ? (
+              <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: 260, gap: 1.5, bgcolor: "action.hover", borderRadius: 2, border: "1px dashed", borderColor: "divider" }}>
+                <Box sx={{ width: 48, height: 48, borderRadius: "50%", bgcolor: "rgba(139, 92, 246, 0.15)", color: "primary.main", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <TrendingUpIcon />
+                </Box>
+                <Typography variant="body2" color="text.secondary" fontWeight={500}>
+                  Complete habits to start tracking trends
+                </Typography>
+              </Box>
             ) : (
               <ResponsiveContainer width="100%" height={260}>
                 <LineChart data={dailyProgress}>
@@ -427,9 +447,14 @@ export default function Dashboard() {
             {loadingHabits ? (
               <CircularProgress size={20} />
             ) : todayHabits.length === 0 ? (
-              <Typography variant="body2" color="text.secondary">
-                No active habits configured for today.
-              </Typography>
+              <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", py: 4, gap: 1.5, bgcolor: "action.hover", borderRadius: 2, border: "1px dashed", borderColor: "divider" }}>
+                <Typography variant="body2" color="text.secondary" fontWeight={500}>
+                  No active habits configured for today.
+                </Typography>
+                <Button variant="outlined" size="small" onClick={() => navigate("/habits")} sx={{ mt: 1, borderRadius: 2, fontWeight: 600 }}>
+                  + Create First Habit
+                </Button>
+              </Box>
             ) : (
               <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
                 {todayHabits.map((item) => (

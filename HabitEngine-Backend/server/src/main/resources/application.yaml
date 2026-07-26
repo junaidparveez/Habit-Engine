@@ -9,8 +9,8 @@ spring:
   # --- Database Configuration ---
   datasource:
     url: jdbc:postgresql://localhost:5432/habitEngineDB
-    username: postgres
-    password: Probuddy
+    username: ******
+    password: ******
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -34,10 +34,17 @@ spring:
     default-property-inclusion: non_null
     time-zone: UTC
 
-  # --- Spring AI (disabled until API key is configured) ---
+  # --- Spring AI ---
   ai:
+    tavily:
+      api-key: ******
     openai:
-      api-key: ${OPENAI_API_KEY:not-configured}
+      api-key: ${OPENAI_API_KEY:}
+      chat:
+        options:
+          model: gpt-4.1
+          temperature: 0.7
+          max-tokens: 6000
 
   # --- Mail (deferred to Milestone 11) ---
   mail:
@@ -70,7 +77,7 @@ logging:
     org.hibernate.type.descriptor.sql.BasicBinder: WARN
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
-
+  
 # --- JWT Configuration ---
 jwt:
   secret: ${JWT_SECRET:HabitEngine2026SecretKeyForJWTAuthenticationMustBeAtLeast256BitsLong}

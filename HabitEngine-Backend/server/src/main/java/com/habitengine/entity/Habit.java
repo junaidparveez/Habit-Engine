@@ -27,7 +27,7 @@ public class Habit {
     @Column(name = "user_id")
     private Long userId; // Nullable for now, will map to Users table in Milestone 9
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     @JoinColumn(name = "category_id")
     private Category category;
 
@@ -61,8 +61,11 @@ public class Habit {
     @Column(name = "end_date")
     private LocalDate endDate;
 
-    @OneToOne(mappedBy = "habit", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "habit", cascade = CascadeType.ALL, fetch = FetchType.LAZY,orphanRemoval = true)
     private HabitStreak streak;
+
+    @OneToMany(mappedBy = "habit", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<HabitCompletion> completions;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "goal_id")

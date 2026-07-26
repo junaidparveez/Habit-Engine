@@ -20,7 +20,7 @@ import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
-import LocalFireDepartmentIcon from "@mui/icons-material/LocalFireDepartment";
+import RocketLaunchIcon from "@mui/icons-material/RocketLaunch";
 
 // ─── Animated background orbs ───────────────────────────────────────────
 const floatingOrb = {
@@ -215,7 +215,7 @@ export default function RegisterPage() {
                 boxShadow: "0 8px 24px rgba(139, 92, 246, 0.35)",
               }}
             >
-              <LocalFireDepartmentIcon sx={{ fontSize: 32, color: "#fff" }} />
+              <RocketLaunchIcon sx={{ fontSize: 32, color: "#fff" }} />
             </Box>
             <Typography
               variant="h4"
@@ -228,10 +228,10 @@ export default function RegisterPage() {
                 mb: 0.5,
               }}
             >
-              HabitEngine
+              LevelUp
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Create your account and start tracking habits
+              Create your account and begin your quest
             </Typography>
           </Box>
 
