@@ -1,4 +1,4 @@
-# HabitEngine — Architecture
+# Level Up AI — Architecture
 
 > Last updated: 2026-07-11
 
@@ -20,7 +20,7 @@
 
 ## Layered Architecture
 
-HabitEngine follows a strict **three-layer architecture** to enforce separation of concerns:
+Level Up AI follows a strict **three-layer architecture** to enforce separation of concerns:
 
 ```
 ┌─────────────────────────────────────────┐
@@ -63,7 +63,7 @@ HabitEngine follows a strict **three-layer architecture** to enforce separation 
 ## Package Structure
 
 ```
-com.junaid.habitengine
+com.levelupai
 ├── config/               # Security, CORS, application configuration
 ├── controller/           # REST controllers
 ├── dto/                  # Request/Response DTOs

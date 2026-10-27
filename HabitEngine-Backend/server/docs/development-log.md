@@ -1,4 +1,4 @@
-# HabitEngine — Development Log
+# Level Up AI — Development Log
 
 > A chronological record of milestones, decisions, and progress.
 
@@ -11,7 +11,7 @@
 
 ### Summary
 
-Established the foundational project structure, configuration, and infrastructure for the HabitEngine backend.
+Established the foundational project structure, configuration, and infrastructure for the Level Up AI backend.
 
 ### What Was Done
 
@@ -41,7 +41,7 @@ Established the foundational project structure, configuration, and infrastructur
 server/
 ├── src/main/resources/
 │   └── application.yaml
-├── src/main/java/com/junaid/habitengine/
+├── src/main/java/com/levelupai/
 │   ├── config/
 │   │   ├── SecurityConfig.java
 │   │   └── CorsConfig.java

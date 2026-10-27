@@ -228,7 +228,7 @@ export default function RegisterPage() {
                 mb: 0.5,
               }}
             >
-              LevelUp
+              Level Up AI
             </Typography>
             <Typography variant="body2" color="text.secondary">
               Create your account and begin your quest

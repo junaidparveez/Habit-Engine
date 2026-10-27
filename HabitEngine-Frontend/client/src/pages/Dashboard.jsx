@@ -266,7 +266,7 @@ export default function Dashboard() {
           </Typography>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
             <Typography variant="body2" color="text.secondary">
-              Welcome back to LevelUp
+              Welcome back to Level Up AI
             </Typography>
           </Box>
         </Box>
