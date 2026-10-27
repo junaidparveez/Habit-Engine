@@ -9,8 +9,8 @@ spring:
   # --- Database Configuration ---
   datasource:
     url: jdbc:postgresql://localhost:5432/habitEngineDB
-    username: postgres
-    password: Probuddy
+    username: ******
+    password: ******
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -37,9 +37,9 @@ spring:
   # --- Spring AI ---
   ai:
     tavily:
-      api-key: ${TAVILY_API_KEY: configureone}
+      api-key: ******
     openai:
-      api-key: ${OPENAI_API_KEY: configureone}
+      api-key: ${OPENAI_API_KEY:}
       chat:
         options:
           model: gpt-4.1
