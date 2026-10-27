@@ -18,7 +18,7 @@ import FireIcon from "@mui/icons-material/LocalFireDepartment";
  * Renders a single habit with its category, description, status, and control actions.
  */
 export default function HabitCard({ habit, onEdit, onDelete }) {
-  const categoryColor = habit.category?.color || "#8B5CF6";
+  const categoryColor = habit.category?.color || "#6366F1";
   const frequencyLabel = habit.frequency.toLowerCase();
 
   return (

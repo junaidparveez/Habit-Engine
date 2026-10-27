@@ -51,7 +51,7 @@ class ErrorBoundary extends React.Component {
             sx={{
               borderRadius: 8,
               px: 4,
-              background: "linear-gradient(135deg, #8B5CF6, #06B6D4)",
+              background: "linear-gradient(135deg, #6366F1, #4F46E5)",
             }}
           >
             Refresh Page

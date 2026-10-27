@@ -32,7 +32,7 @@ const CATEGORIES = [
   { value: "STUDY", label: "Study / Deep Work 📚", color: "#6366f1" },
   { value: "WORK", label: "Work & Projects 💼", color: "#3b82f6" },
   { value: "HEALTH", label: "Health & Exercise 🏃", color: "#10b981" },
-  { value: "EVENING", label: "Evening & Reflection 🌙", color: "#8b5cf6" },
+  { value: "EVENING", label: "Evening & Reflection 🌙", color: "#6366F1" },
 ];
 
 export default function RoutinePage() {
@@ -252,7 +252,7 @@ export default function RoutinePage() {
               fontWeight: 700,
               px: 4,
               py: 1.5,
-              background: "linear-gradient(135deg, #8B5CF6, #06B6D4)",
+              background: "linear-gradient(135deg, #6366F1, #4F46E5)",
               color: "#fff",
               "&:hover": {
                 opacity: 0.9,
@@ -430,7 +430,7 @@ export default function RoutinePage() {
             <MenuItem value="">-- None --</MenuItem>
             {goals.map((g) => (
               <MenuItem key={g.id} value={g.id}>
-                🎯 {g.name}
+                {g.name}
               </MenuItem>
             ))}
           </TextField>

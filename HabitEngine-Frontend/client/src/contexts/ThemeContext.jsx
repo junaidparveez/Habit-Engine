@@ -3,20 +3,39 @@ import { ThemeProvider as MuiThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import { darkTheme, lightTheme } from "../styles/theme";
 
+const STORAGE_KEY = "themeMode";
+
 const ThemeContext = createContext({
   mode: "dark",
   toggleTheme: () => {},
 });
 
+const readStoredMode = () => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored === "light" || stored === "dark" ? stored : "dark";
+  } catch {
+    return "dark";
+  }
+};
+
 /**
  * Theme provider with dark/light mode toggle.
- * Wraps the app with MUI's ThemeProvider + CssBaseline.
+ * Wraps the app with MUI's ThemeProvider + CssBaseline and remembers the choice.
  */
 export function ThemeProvider({ children }) {
-  const [mode, setMode] = useState("dark");
+  const [mode, setMode] = useState(readStoredMode);
 
   const toggleTheme = () => {
-    setMode((prev) => (prev === "dark" ? "light" : "dark"));
+    setMode((prev) => {
+      const next = prev === "dark" ? "light" : "dark";
+      try {
+        localStorage.setItem(STORAGE_KEY, next);
+      } catch {
+        // storage unavailable — keep in-memory choice
+      }
+      return next;
+    });
   };
 
   const theme = useMemo(

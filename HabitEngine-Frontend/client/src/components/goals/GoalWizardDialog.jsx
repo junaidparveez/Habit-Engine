@@ -378,7 +378,7 @@ export default function GoalWizardDialog({ open, onClose, onSuccess }) {
             </Button>
           ) : (
             <Button variant="contained" color="success" onClick={handleFinish} disabled={submitting || !goal.name}>
-              {submitting ? "Creating Plan..." : "🚀 Finish & Activate Plan"}
+              {submitting ? "Creating Plan..." : "Finish & activate plan"}
             </Button>
           )}
         </Box>

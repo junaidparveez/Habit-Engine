@@ -77,7 +77,7 @@ export default function UserProgressWidget() {
             margin: "4px",
             fontSize: "0.85rem",
             fontWeight: "bold",
-            background: "linear-gradient(135deg, #8B5CF6, #06B6D4)",
+            background: "linear-gradient(135deg, #6366F1, #4F46E5)",
             zIndex: 3,
           }}
         >

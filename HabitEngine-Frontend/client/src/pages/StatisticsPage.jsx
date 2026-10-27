@@ -61,10 +61,10 @@ export default function StatisticsPage() {
   }, []);
 
   const getHeatmapColor = (count) => {
-    if (count === 0) return "rgba(139, 92, 246, 0.05)";
-    if (count === 1) return "rgba(139, 92, 246, 0.3)";
-    if (count === 2) return "rgba(139, 92, 246, 0.6)";
-    return "rgba(139, 92, 246, 1)"; // primary color
+    if (count === 0) return "rgba(99, 102, 241, 0.05)";
+    if (count === 1) return "rgba(99, 102, 241, 0.3)";
+    if (count === 2) return "rgba(99, 102, 241, 0.6)";
+    return "rgba(99, 102, 241, 1)"; // primary color
   };
 
   if (loading) {
@@ -243,12 +243,12 @@ export default function StatisticsPage() {
                     <Line
                       type="monotone"
                       dataKey="completionRate"
-                      stroke="#8B5CF6"
+                      stroke="#6366F1"
                       strokeWidth={3}
-                      dot={{ r: 4, fill: "#8B5CF6", strokeWidth: 0 }}
+                      dot={{ r: 4, fill: "#6366F1", strokeWidth: 0 }}
                       activeDot={{
                         r: 6,
-                        fill: "#8B5CF6",
+                        fill: "#6366F1",
                         stroke: "#fff",
                         strokeWidth: 2,
                       }}

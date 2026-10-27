@@ -25,7 +25,7 @@ const PageLoader = () => (
   <Box
     sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "60vh" }}
   >
-    <CircularProgress sx={{ color: "#8B5CF6" }} />
+    <CircularProgress sx={{ color: "#6366F1" }} />
   </Box>
 );
 

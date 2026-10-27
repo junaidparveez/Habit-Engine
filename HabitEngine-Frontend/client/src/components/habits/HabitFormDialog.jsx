@@ -213,7 +213,7 @@ export default function HabitFormDialog({ open, onClose, habit, onSave }) {
                             width: 12,
                             height: 12,
                             borderRadius: "50%",
-                            bgcolor: cat.color || "#8B5CF6",
+                            bgcolor: cat.color || "#6366F1",
                           }}
                         />
                         {cat.name}
@@ -330,9 +330,9 @@ export default function HabitFormDialog({ open, onClose, habit, onSave }) {
             variant="contained"
             disabled={loading}
             sx={{
-              background: "linear-gradient(135deg, #8B5CF6, #7C3AED)",
+              background: "linear-gradient(135deg, #6366F1, #4F46E5)",
               "&:hover": {
-                background: "linear-gradient(135deg, #7C3AED, #6D28D9)",
+                background: "linear-gradient(135deg, #4F46E5, #4338CA)",
               },
             }}
           >

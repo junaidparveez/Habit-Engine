@@ -125,9 +125,9 @@ export default function HabitsPage() {
           sx={{
             px: 3,
             py: 1.2,
-            background: "linear-gradient(135deg, #8B5CF6, #7C3AED)",
+            background: "linear-gradient(135deg, #6366F1, #4F46E5)",
             "&:hover": {
-              background: "linear-gradient(135deg, #7C3AED, #6D28D9)",
+              background: "linear-gradient(135deg, #4F46E5, #4338CA)",
             },
           }}
         >

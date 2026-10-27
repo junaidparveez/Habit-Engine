@@ -284,7 +284,7 @@ export default function GoalsPage() {
             onClick={() => setWizardOpen(true)}
             sx={{ borderRadius: 2, fontWeight: 700 }}
           >
-            🧙 Full Goal Setup Wizard
+            Goal setup wizard
           </Button>
           <Button variant="outlined" startIcon={<AddIcon />} onClick={() => handleOpen()} sx={{ borderRadius: 2, fontWeight: 700 }}>
             New Goal

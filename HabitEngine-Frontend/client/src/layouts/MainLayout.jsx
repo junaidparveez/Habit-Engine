@@ -7,37 +7,35 @@ import {
   Toolbar,
   Typography,
   List,
-  ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
   IconButton,
   useMediaQuery,
   useTheme,
-  Divider,
   Avatar,
   Tooltip,
-  Button,
   Snackbar,
   Alert,
+  LinearProgress,
 } from "@mui/material";
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import HabitsIcon from "@mui/icons-material/FitnessCenter";
-import StatsIcon from "@mui/icons-material/BarChart";
-import GoalsIcon from "@mui/icons-material/Flag";
-import SettingsIcon from "@mui/icons-material/Settings";
+import DashboardIcon from "@mui/icons-material/SpaceDashboardOutlined";
+import HabitsIcon from "@mui/icons-material/TaskAltOutlined";
+import StatsIcon from "@mui/icons-material/InsightsOutlined";
+import GoalsIcon from "@mui/icons-material/FlagOutlined";
+import SettingsIcon from "@mui/icons-material/SettingsOutlined";
 import MenuIcon from "@mui/icons-material/Menu";
-import DarkModeIcon from "@mui/icons-material/DarkMode";
-import LightModeIcon from "@mui/icons-material/LightMode";
-import GroupIcon from "@mui/icons-material/Group";
-import RocketLaunchIcon from "@mui/icons-material/RocketLaunch";
-import LogoutIcon from "@mui/icons-material/Logout";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
-import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import DarkModeIcon from "@mui/icons-material/DarkModeOutlined";
+import LightModeIcon from "@mui/icons-material/LightModeOutlined";
+import GroupIcon from "@mui/icons-material/GroupsOutlined";
+import LogoutIcon from "@mui/icons-material/LogoutOutlined";
+import AccessTimeIcon from "@mui/icons-material/ScheduleOutlined";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesomeOutlined";
 import { DRAWER_WIDTH, NAV_ITEMS } from "../constants";
 import { useThemeMode } from "../contexts/ThemeContext";
 import { useAuth } from "../contexts/AuthContext";
 import useWebSocket from "../hooks/useWebSocket";
+import BrandLogo from "../components/common/BrandLogo";
 
 const iconMap = {
   Dashboard: DashboardIcon,
@@ -54,7 +52,7 @@ const iconMap = {
  * Main application layout with responsive sidebar navigation.
  * - Permanent drawer on desktop
  * - Temporary drawer on mobile
- * - Top app bar with theme toggle
+ * - Top bar with page title and theme toggle
  */
 export default function MainLayout() {
   const theme = useTheme();
@@ -64,7 +62,7 @@ export default function MainLayout() {
   const navigate = useNavigate();
   const { mode, toggleTheme } = useThemeMode();
   const { user, logout } = useAuth();
-  
+
   const [notification, setNotification] = useState(null);
 
   useWebSocket("/user/queue/notifications", (msg) => {
@@ -72,7 +70,7 @@ export default function MainLayout() {
   });
 
   const handleCloseNotification = (event, reason) => {
-    if (reason === 'clickaway') return;
+    if (reason === "clickaway") return;
     setNotification(null);
   };
 
@@ -92,61 +90,32 @@ export default function MainLayout() {
     }
   };
 
+  const currentItem =
+    NAV_ITEMS.find((item) => item.path === location.pathname) ||
+    (location.pathname.startsWith("/settings") ? { label: "Settings" } : null) ||
+    (location.pathname.startsWith("/groups") || location.pathname.startsWith("/messages")
+      ? { label: "Community" }
+      : null);
+
+  const xpPercent = Math.min(100, ((user?.currentXp || 0) / (user?.nextLevelXp || 100)) * 100);
+
+  const themeToggle = (
+    <Tooltip title={mode === "dark" ? "Switch to light mode" : "Switch to dark mode"}>
+      <IconButton onClick={toggleTheme} size="small" sx={{ color: "text.secondary", border: 1, borderColor: "divider", width: 34, height: 34 }}>
+        {mode === "dark" ? <LightModeIcon fontSize="small" /> : <DarkModeIcon fontSize="small" />}
+      </IconButton>
+    </Tooltip>
+  );
+
   const drawerContent = (
-    <Box
-      sx={{
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
+    <Box sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
       {/* Brand */}
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          gap: 1.5,
-          px: 2.5,
-          py: 2.5,
-        }}
-      >
-        <Avatar
-          sx={{
-            bgcolor: "primary.main",
-            width: 38,
-            height: 38,
-            fontSize: "1.2rem",
-          }}
-        >
-          <RocketLaunchIcon fontSize="small" />
-        </Avatar>
-        <Box>
-          <Typography
-            variant="h6"
-            sx={{
-              fontWeight: 700,
-              fontSize: "1.1rem",
-              background: "linear-gradient(135deg, #8B5CF6, #06B6D4)",
-              backgroundClip: "text",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
-          >
-            Level Up AI
-          </Typography>
-            <Typography
-              variant="caption"
-              sx={{ color: "text.secondary", fontSize: "0.7rem" }}
-            >
-              Level up your life
-            </Typography>
-        </Box>
+      <Box sx={{ px: 2.5, height: 64, display: "flex", alignItems: "center", flexShrink: 0 }}>
+        <BrandLogo size={30} />
       </Box>
 
-      <Divider sx={{ mx: 2 }} />
-
       {/* Navigation Items */}
-      <List sx={{ flex: 1, px: 1.5, py: 1.5, overflowY: "auto" }}>
+      <List component="nav" sx={{ flex: 1, px: 1.5, pt: 1, pb: 2, overflowY: "auto" }}>
         {Object.entries(
           NAV_ITEMS.reduce((acc, item) => {
             if (!acc[item.section]) acc[item.section] = [];
@@ -154,18 +123,17 @@ export default function MainLayout() {
             return acc;
           }, {})
         ).map(([section, items]) => (
-          <Box key={section} sx={{ mb: 2.5 }}>
+          <Box key={section} sx={{ mb: 2 }}>
             <Typography
-              variant="overline"
               sx={{
-                px: 2,
-                fontSize: "0.65rem",
-                fontWeight: 700,
-                letterSpacing: "0.08em",
+                px: 1.5,
+                mb: 0.75,
+                fontSize: "0.6875rem",
+                fontWeight: 600,
+                letterSpacing: "0.04em",
+                textTransform: "uppercase",
                 color: "text.secondary",
-                opacity: 0.7,
-                display: "block",
-                mb: 0.5,
+                opacity: 0.75,
               }}
             >
               {section}
@@ -175,100 +143,78 @@ export default function MainLayout() {
               const isActive = location.pathname === item.path;
 
               return (
-                <ListItem key={item.path} disablePadding sx={{ mb: 0.5 }}>
-                  <ListItemButton
-                    onClick={() => handleNavClick(item.path)}
-                    sx={{
-                      position: "relative",
-                      borderRadius: 2,
-                      py: 1.2,
-                      px: 2,
-                      bgcolor: isActive
-                        ? "rgba(139, 92, 246, 0.12)"
-                        : "transparent",
-                      color: isActive ? "primary.main" : "text.secondary",
-                      "&:hover": {
-                        bgcolor: isActive
-                          ? "rgba(139, 92, 246, 0.18)"
-                          : "action.hover",
-                      },
-                      transition: "all 0.2s ease",
+                <ListItemButton
+                  key={item.path}
+                  onClick={() => handleNavClick(item.path)}
+                  selected={isActive}
+                  sx={{
+                    mb: 0.25,
+                    py: 0.85,
+                    px: 1.5,
+                    color: isActive ? "text.primary" : "text.secondary",
+                    "&.Mui-selected": {
+                      bgcolor: "action.selected",
+                      "&:hover": { bgcolor: "action.selected" },
+                    },
+                    "&:hover": { color: "text.primary" },
+                  }}
+                >
+                  <ListItemIcon sx={{ minWidth: 32, color: isActive ? "primary.main" : "inherit" }}>
+                    <Icon sx={{ fontSize: 19 }} />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={item.label}
+                    slotProps={{
+                      primary: { sx: { fontSize: "0.875rem", fontWeight: isActive ? 600 : 500 } },
                     }}
-                  >
-                    {isActive && (
-                      <Box
-                        sx={{
-                          position: "absolute",
-                          left: 0,
-                          top: "50%",
-                          transform: "translateY(-50%)",
-                          width: 4,
-                          height: "60%",
-                          borderRadius: "0 4px 4px 0",
-                          background: "linear-gradient(180deg, #8B5CF6, #06B6D4)",
-                        }}
-                      />
-                    )}
-                    <ListItemIcon
-                      sx={{
-                        minWidth: 40,
-                        color: isActive ? "primary.main" : "text.secondary",
-                      }}
-                    >
-                      <Icon fontSize="small" />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            fontWeight: isActive ? 700 : 500,
-                            fontSize: "0.875rem",
-                          }}
-                        >
-                          {item.label}
-                        </Typography>
-                      }
-                    />
-                  </ListItemButton>
-                </ListItem>
+                  />
+                </ListItemButton>
               );
             })}
           </Box>
         ))}
       </List>
 
-      <Divider sx={{ mx: 2 }} />
-
-      <Box sx={{ p: 2, mt: "auto" }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, p: 1.5, borderRadius: 2, bgcolor: "action.hover", border: "1px solid", borderColor: "divider" }}>
-          <Avatar sx={{ width: 36, height: 36, background: "linear-gradient(135deg, #8B5CF6, #06B6D4)", fontSize: "1rem", fontWeight: "bold" }}>
+      {/* Profile */}
+      <Box sx={{ p: 1.5, borderTop: 1, borderColor: "divider" }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, p: 1, borderRadius: 2 }}>
+          <Avatar sx={{ width: 34, height: 34, bgcolor: "primary.main", color: "#fff", fontSize: "0.8rem" }}>
             {getInitials()}
           </Avatar>
-          <Box sx={{ flex: 1, overflow: "hidden" }}>
-            <Typography variant="body2" fontWeight={700} noWrap>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography variant="body2" fontWeight={600} noWrap>
               {user?.displayName || user?.username || "Champ"}
             </Typography>
-            <Typography variant="caption" color="text.secondary" noWrap sx={{ display: "block", fontSize: "0.65rem", fontWeight: 600 }}>
-              Level {user?.level || 1} • {user?.currentXp || 0}/{user?.nextLevelXp || 100} XP
-            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Typography variant="caption" color="text.secondary" noWrap sx={{ fontSize: "0.7rem" }}>
+                Lvl {user?.level || 1}
+              </Typography>
+              <LinearProgress variant="determinate" value={xpPercent} sx={{ flex: 1, height: 4 }} />
+            </Box>
           </Box>
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
-            <Tooltip title="Settings">
-              <IconButton size="small" onClick={() => navigate("/settings")} sx={{ width: 24, height: 24, color: "text.secondary" }}>
-                <SettingsIcon sx={{ fontSize: "1.1rem" }} />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Logout">
-              <IconButton size="small" onClick={logout} sx={{ width: 24, height: 24, color: "error.main" }}>
-                <LogoutIcon sx={{ fontSize: "1.1rem" }} />
-              </IconButton>
-            </Tooltip>
-          </Box>
+          <Tooltip title="Settings">
+            <IconButton size="small" onClick={() => handleNavClick("/settings")} sx={{ color: "text.secondary" }}>
+              <SettingsIcon sx={{ fontSize: 18 }} />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Log out">
+            <IconButton size="small" onClick={logout} sx={{ color: "text.secondary", "&:hover": { color: "error.main" } }}>
+              <LogoutIcon sx={{ fontSize: 18 }} />
+            </IconButton>
+          </Tooltip>
         </Box>
       </Box>
     </Box>
   );
+
+  const drawerPaperSx = {
+    "& .MuiDrawer-paper": {
+      width: DRAWER_WIDTH,
+      bgcolor: "background.paper",
+      borderRight: 1,
+      borderColor: "divider",
+    },
+  };
 
   return (
     <Box sx={{ display: "flex", minHeight: "100vh" }}>
@@ -279,80 +225,37 @@ export default function MainLayout() {
           elevation={0}
           sx={{
             bgcolor: "background.paper",
+            color: "text.primary",
             borderBottom: 1,
             borderColor: "divider",
           }}
         >
-          <Toolbar>
-            <IconButton
-              edge="start"
-              onClick={handleDrawerToggle}
-              sx={{ mr: 2, color: "text.primary" }}
-            >
+          <Toolbar sx={{ gap: 1 }}>
+            <IconButton edge="start" onClick={handleDrawerToggle} aria-label="Open navigation" sx={{ color: "text.primary" }}>
               <MenuIcon />
             </IconButton>
-            <Typography
-              variant="h6"
-              sx={{
-                fontWeight: 700,
-                flex: 1,
-                background: "linear-gradient(135deg, #8B5CF6, #06B6D4)",
-                backgroundClip: "text",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
-              Level Up AI
-            </Typography>
-            <Tooltip title={mode === "dark" ? "Light mode" : "Dark mode"}>
-              <IconButton onClick={toggleTheme} sx={{ color: "text.primary" }}>
-                {mode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Settings">
-              <IconButton onClick={() => navigate("/settings")} sx={{ color: "text.primary" }}>
-                <SettingsIcon />
-              </IconButton>
-            </Tooltip>
+            <Box sx={{ flex: 1 }}>
+              <BrandLogo size={28} />
+            </Box>
+            {themeToggle}
           </Toolbar>
         </AppBar>
       )}
 
       {/* Sidebar Drawer */}
-      <Box
-        component="nav"
-        sx={{ width: { md: DRAWER_WIDTH }, flexShrink: { md: 0 } }}
-      >
+      <Box component="nav" sx={{ width: { md: DRAWER_WIDTH }, flexShrink: { md: 0 } }}>
         {isMobile ? (
           <Drawer
             variant="temporary"
             open={mobileOpen}
             onClose={handleDrawerToggle}
             ModalProps={{ keepMounted: true }}
-            sx={{
-              "& .MuiDrawer-paper": {
-                width: DRAWER_WIDTH,
-                bgcolor: "background.paper",
-                borderRight: 1,
-                borderColor: "divider",
-              },
-            }}
+            sx={drawerPaperSx}
           >
             {drawerContent}
           </Drawer>
         ) : (
-          <Drawer
-            variant="permanent"
-            sx={{
-              "& .MuiDrawer-paper": {
-                width: DRAWER_WIDTH,
-                bgcolor: "background.paper",
-                borderRight: 1,
-                borderColor: "divider",
-              },
-            }}
-            open
-          >
+          <Drawer variant="permanent" sx={drawerPaperSx} open>
             {drawerContent}
           </Drawer>
         )}
@@ -372,36 +275,42 @@ export default function MainLayout() {
         {!isMobile && (
           <Box
             sx={{
+              position: "sticky",
+              top: 0,
+              zIndex: theme.zIndex.appBar,
+              height: 64,
               display: "flex",
-              justifyContent: "flex-end",
               alignItems: "center",
-              gap: 1,
-              px: 3,
-              py: 1.5,
+              gap: 1.5,
+              px: 4,
               borderBottom: 1,
               borderColor: "divider",
-              bgcolor: "background.paper",
+              bgcolor: mode === "dark" ? "rgba(9, 9, 11, 0.8)" : "rgba(247, 247, 248, 0.8)",
+              backdropFilter: "saturate(180%) blur(8px)",
             }}
           >
-            <Tooltip title={mode === "dark" ? "Light mode" : "Dark mode"}>
-              <IconButton onClick={toggleTheme} sx={{ color: "text.primary" }}>
-                {mode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Settings">
-              <IconButton onClick={() => navigate("/settings")} sx={{ color: "text.primary" }}>
-                <SettingsIcon />
-              </IconButton>
-            </Tooltip>
+            <Typography variant="body2" color="text.secondary" sx={{ flex: 1 }}>
+              Level Up AI
+              {currentItem && (
+                <>
+                  <Box component="span" sx={{ mx: 1, opacity: 0.5 }}>/</Box>
+                  <Box component="span" sx={{ color: "text.primary", fontWeight: 600 }}>
+                    {currentItem.label}
+                  </Box>
+                </>
+              )}
+            </Typography>
+            {themeToggle}
           </Box>
         )}
 
         {/* Page Content */}
         <Box
           sx={{
-            p: { xs: 2, sm: 3, md: 4 },
-            mt: isMobile ? "64px" : 0,
-            maxWidth: 1400,
+            px: { xs: 2, sm: 3, md: 4 },
+            py: { xs: 3, md: 4 },
+            mt: isMobile ? "56px" : 0,
+            maxWidth: 1320,
             mx: "auto",
             width: "100%",
           }}

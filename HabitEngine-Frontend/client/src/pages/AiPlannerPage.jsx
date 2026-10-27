@@ -39,13 +39,13 @@ const CATEGORY_META = {
   STUDY:   { color: "#6366F1", bg: "rgba(99,102,241,0.12)",  label: "Study"   },
   WORK:    { color: "#3B82F6", bg: "rgba(59,130,246,0.12)",  label: "Work"    },
   HEALTH:  { color: "#10B981", bg: "rgba(16,185,129,0.12)",  label: "Health"  },
-  EVENING: { color: "#8B5CF6", bg: "rgba(139,92,246,0.12)",  label: "Evening" },
+  EVENING: { color: "#6366F1", bg: "rgba(99, 102, 241,0.12)",  label: "Evening" },
 };
 
 const RESOURCE_META = {
   YOUTUBE: { color: "#EF4444", icon: <YouTubeIcon sx={{ fontSize: 16 }} />, label: "YouTube" },
   URL:     { color: "#3B82F6", icon: <LinkIcon sx={{ fontSize: 16 }} />,    label: "URL"     },
-  NOTE:    { color: "#8B5CF6", icon: <NoteIcon sx={{ fontSize: 16 }} />,    label: "Note"    },
+  NOTE:    { color: "#6366F1", icon: <NoteIcon sx={{ fontSize: 16 }} />,    label: "Note"    },
 };
 
 // ─── Inline editable text field component ────────────────────────────────────
@@ -149,7 +149,7 @@ export default function AiPlannerPage() {
     setSaving(true);
     try {
       await aiApi.savePlan(plan);
-      setSuccessMsg("🎉 Plan saved! Your goal, milestones, and routine are ready.");
+      setSuccessMsg("Plan saved! Your goal, milestones, and routine are ready.");
       setTimeout(() => navigate("/goals"), 2000);
     } catch (err) {
       setError(err.message || "Failed to save plan. Please try again.");
@@ -185,61 +185,30 @@ export default function AiPlannerPage() {
 
   // ── UI ────────────────────────────────────────────────────────────────────
   return (
-    <Box sx={{ maxWidth: 900, mx: "auto", px: { xs: 2, md: 4 }, py: 4 }}>
+    <Box sx={{ maxWidth: 900, mx: "auto" }}>
 
       {/* ── Header ── */}
-      <Box sx={{ mb: 5, textAlign: "center" }}>
-        <Box
-          sx={{
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: 64,
-            height: 64,
-            borderRadius: 4,
-            background: "linear-gradient(135deg, #8B5CF6, #06B6D4)",
-            mb: 2,
-            boxShadow: "0 8px 32px rgba(139,92,246,0.4)",
-            animation: "pulse 2.5s ease-in-out infinite",
-            "@keyframes pulse": {
-              "0%, 100%": { boxShadow: "0 8px 32px rgba(139,92,246,0.4)" },
-              "50%": { boxShadow: "0 8px 48px rgba(139,92,246,0.7)" },
-            },
-          }}
-        >
-          <AutoAwesomeIcon sx={{ fontSize: 34, color: "#fff" }} />
-        </Box>
-        <Typography
-          variant="h4"
-          fontWeight={800}
-          sx={{
-            background: "linear-gradient(135deg, #8B5CF6, #06B6D4)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
-            mb: 1,
-          }}
-        >
+      <Box sx={{ mb: 4 }}>
+        <Chip
+          icon={<AutoAwesomeIcon sx={{ fontSize: "14px !important" }} />}
+          label="AI-powered"
+          size="small"
+          color="primary"
+          sx={{ mb: 1.5, height: 24 }}
+        />
+        <Typography variant="h4" component="h1" sx={{ mb: 0.75 }}>
           AI Planner
         </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 520, mx: "auto" }}>
-          Describe what you want to achieve — the AI will generate a complete plan with goals, milestones, study resources, and a daily routine. Edit anything before saving.
+        <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 620 }}>
+          Describe what you want to achieve. The AI drafts a complete plan with goals, milestones, study resources and a daily routine, and you can edit anything before saving.
         </Typography>
       </Box>
 
       {/* ── Prompt Area ── */}
-      <Card
-        sx={{
-          borderRadius: 4,
-          border: "1px solid",
-          borderColor: "divider",
-          background: "linear-gradient(135deg, rgba(139,92,246,0.05), rgba(6,182,212,0.05))",
-          boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
-        }}
-      >
-        <CardContent sx={{ p: { xs: 2.5, md: 4 } }}>
-          <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 2 }}>
-            ✍️ Describe your plan
+      <Card>
+        <CardContent sx={{ p: { xs: 2.5, md: 3 } }}>
+          <Typography variant="subtitle1" sx={{ mb: 1.5 }}>
+            Describe your plan
           </Typography>
           <TextField
             multiline
@@ -250,41 +219,23 @@ export default function AiPlannerPage() {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             disabled={loading}
-            sx={{
-              mb: 2.5,
-              "& .MuiOutlinedInput-root": {
-                borderRadius: 2.5,
-                fontSize: "0.95rem",
-                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "primary.main",
-                  boxShadow: "0 0 0 3px rgba(139,92,246,0.15)",
-                },
-              },
-            }}
+            sx={{ mb: 2 }}
           />
           {error && (
-            <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }} onClose={() => setError("")}>
+            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError("")}>
               {error}
             </Alert>
           )}
           <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 1 }}>
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" color="text.secondary" sx={{ fontVariantNumeric: "tabular-nums" }}>
               {description.length} / 2000 characters
             </Typography>
             <Button
               variant="contained"
-              size="large"
-              startIcon={loading ? <CircularProgress size={18} sx={{ color: "#fff" }} /> : <AutoAwesomeIcon />}
+              startIcon={loading ? <CircularProgress size={16} sx={{ color: "inherit" }} /> : <AutoAwesomeIcon />}
               onClick={handleGenerate}
               disabled={loading || !description.trim()}
-              sx={{
-                borderRadius: 2.5,
-                fontWeight: 700,
-                px: 4,
-                background: "linear-gradient(135deg, #8B5CF6, #06B6D4)",
-                "&:hover": { background: "linear-gradient(135deg, #7C3AED, #0891B2)" },
-                "&.Mui-disabled": { background: "linear-gradient(135deg, #8B5CF6, #06B6D4)", opacity: 0.6 },
-              }}
+              sx={{ px: 3 }}
             >
               {loading ? "Generating Plan…" : "Generate Plan"}
             </Button>
@@ -301,7 +252,7 @@ export default function AiPlannerPage() {
               AI is crafting your personalised plan…
             </Typography>
           </Box>
-          <LinearProgress sx={{ borderRadius: 2, mb: 3, "& .MuiLinearProgress-bar": { background: "linear-gradient(90deg, #8B5CF6, #06B6D4)" } }} />
+          <LinearProgress sx={{ mb: 3 }} />
           <PlanSkeleton />
         </Box>
       )}
@@ -312,8 +263,8 @@ export default function AiPlannerPage() {
           <Box sx={{ mt: 4 }}>
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3, flexWrap: "wrap", gap: 2 }}>
               <Box>
-                <Typography variant="h5" fontWeight={800}>
-                  ✨ Your AI-Generated Plan
+                <Typography variant="h5">
+                  Your generated plan
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   Click any text to edit it before saving.
@@ -321,32 +272,23 @@ export default function AiPlannerPage() {
               </Box>
               <Button
                 variant="contained"
-                size="large"
-                startIcon={saving ? <CircularProgress size={18} sx={{ color: "#fff" }} /> : <SaveIcon />}
+                startIcon={saving ? <CircularProgress size={16} sx={{ color: "inherit" }} /> : <SaveIcon />}
                 onClick={handleSave}
                 disabled={saving}
-                sx={{
-                  borderRadius: 2.5,
-                  fontWeight: 700,
-                  px: 4,
-                  background: "linear-gradient(135deg, #10B981, #06B6D4)",
-                  "&:hover": { background: "linear-gradient(135deg, #059669, #0891B2)" },
-                  "&.Mui-disabled": { background: "linear-gradient(135deg, #10B981, #06B6D4)", opacity: 0.6 },
-                }}
               >
                 {saving ? "Saving…" : "Save Plan"}
               </Button>
             </Box>
 
             {/* Goal Card */}
-            <Card sx={{ mb: 3, borderRadius: 3, border: "1px solid", borderColor: "rgba(139,92,246,0.3)", background: "rgba(139,92,246,0.05)" }}>
+            <Card sx={{ mb: 3, borderColor: "rgba(99, 102, 241,0.35)" }}>
               <CardContent sx={{ p: 3 }}>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-                  <Box sx={{ width: 36, height: 36, borderRadius: 2, bgcolor: "rgba(139,92,246,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <FlagIcon sx={{ color: "#8B5CF6", fontSize: 20 }} />
+                  <Box sx={{ width: 32, height: 32, borderRadius: 2, bgcolor: "rgba(99, 102, 241,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <FlagIcon sx={{ color: "primary.main", fontSize: 18 }} />
                   </Box>
-                  <Typography variant="h6" fontWeight={700}>Goal</Typography>
-                  <Chip label="🎯 Primary Goal" size="small" sx={{ ml: "auto", bgcolor: "rgba(139,92,246,0.12)", color: "#8B5CF6", fontWeight: 600 }} />
+                  <Typography variant="h6">Goal</Typography>
+                  <Chip label="Primary goal" size="small" color="primary" sx={{ ml: "auto" }} />
                 </Box>
                 <InlineEdit variant="h6" value={plan.goal.name} onChange={(v) => patchGoal("name", v)} />
                 <InlineEdit value={plan.goal.description} onChange={(v) => patchGoal("description", v)} multiline />
@@ -355,7 +297,7 @@ export default function AiPlannerPage() {
                     label={`🗓 Target: ${plan.goal.targetDate || "Not set"}`}
                     size="small"
                     variant="outlined"
-                    sx={{ fontWeight: 600, borderColor: "rgba(139,92,246,0.4)", color: "#8B5CF6" }}
+                    sx={{ fontWeight: 600, borderColor: "rgba(99, 102, 241,0.4)", color: "#6366F1" }}
                   />
                 </Box>
               </CardContent>
@@ -377,9 +319,9 @@ export default function AiPlannerPage() {
                       <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
                         <Box sx={{
                           width: 32, height: 32, borderRadius: "50%",
-                          background: "linear-gradient(135deg, #F59E0B, #EF4444)",
+                          bgcolor: "action.selected", border: "1px solid", borderColor: "rgba(99, 102, 241,0.35)",
                           display: "flex", alignItems: "center", justifyContent: "center",
-                          fontSize: "0.75rem", fontWeight: 800, color: "#fff", flexShrink: 0
+                          fontSize: "0.75rem", fontWeight: 700, color: "primary.main", flexShrink: 0
                         }}>
                           {m.targetWeek}
                         </Box>
@@ -498,22 +440,12 @@ export default function AiPlannerPage() {
               <Button
                 variant="contained"
                 size="large"
-                startIcon={saving ? <CircularProgress size={20} sx={{ color: "#fff" }} /> : <SaveIcon />}
+                startIcon={saving ? <CircularProgress size={18} sx={{ color: "inherit" }} /> : <SaveIcon />}
                 onClick={handleSave}
                 disabled={saving}
-                sx={{
-                  borderRadius: 3,
-                  fontWeight: 700,
-                  px: 6,
-                  py: 1.5,
-                  fontSize: "1rem",
-                  background: "linear-gradient(135deg, #10B981, #06B6D4)",
-                  boxShadow: "0 4px 20px rgba(16,185,129,0.4)",
-                  "&:hover": { background: "linear-gradient(135deg, #059669, #0891B2)", boxShadow: "0 6px 28px rgba(16,185,129,0.5)" },
-                  "&.Mui-disabled": { background: "linear-gradient(135deg, #10B981, #06B6D4)", opacity: 0.6 },
-                }}
+                sx={{ px: 5 }}
               >
-                {saving ? "Saving your plan…" : "💾 Save Plan to Level Up AI"}
+                {saving ? "Saving your plan…" : "Save plan"}
               </Button>
             </Box>
           </Box>

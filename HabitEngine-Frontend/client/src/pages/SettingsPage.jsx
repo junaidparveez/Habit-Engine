@@ -223,7 +223,7 @@ export default function SettingsPage() {
                       height: 80,
                       fontSize: "2rem",
                       fontWeight: "bold",
-                      background: "linear-gradient(135deg, #8B5CF6, #06B6D4)",
+                      background: "linear-gradient(135deg, #6366F1, #4F46E5)",
                     }}
                   >
                     {getInitials()}
@@ -325,9 +325,9 @@ export default function SettingsPage() {
                 borderRadius: 2,
                 px: 4,
                 py: 1.2,
-                background: (!savingProfile && isProfileChanged) ? "linear-gradient(135deg, #8B5CF6, #7C3AED)" : undefined,
+                background: (!savingProfile && isProfileChanged) ? "linear-gradient(135deg, #6366F1, #4F46E5)" : undefined,
                 alignSelf: "flex-start",
-                "&:hover": { background: (!savingProfile && isProfileChanged) ? "linear-gradient(135deg, #7C3AED, #6D28D9)" : undefined },
+                "&:hover": { background: (!savingProfile && isProfileChanged) ? "linear-gradient(135deg, #4F46E5, #4338CA)" : undefined },
               }}
             >
               {savingProfile ? "Saving..." : "Save Profile"}
@@ -417,9 +417,9 @@ export default function SettingsPage() {
                   borderRadius: 2,
                   px: 4,
                   py: 1.2,
-                  background: (!savingNotif && !loadingNotif) ? "linear-gradient(135deg, #8B5CF6, #7C3AED)" : undefined,
+                  background: (!savingNotif && !loadingNotif) ? "linear-gradient(135deg, #6366F1, #4F46E5)" : undefined,
                   alignSelf: "flex-start",
-                  "&:hover": { background: (!savingNotif && !loadingNotif) ? "linear-gradient(135deg, #7C3AED, #6D28D9)" : undefined },
+                  "&:hover": { background: (!savingNotif && !loadingNotif) ? "linear-gradient(135deg, #4F46E5, #4338CA)" : undefined },
                 }}
               >
                 {savingNotif ? "Saving..." : "Save Notifications"}
@@ -448,7 +448,7 @@ export default function SettingsPage() {
                       borderRadius: 3,
                       border: "2px solid",
                       borderColor: mode === m ? "primary.main" : "divider",
-                      bgcolor: m === "dark" ? "#0F0A1E" : "#F8F9FA",
+                      bgcolor: m === "dark" ? "#09090B" : "#F8F9FA",
                       cursor: "pointer",
                       transition: "all 0.2s",
                       "&:hover": { borderColor: "primary.light" },
@@ -462,7 +462,7 @@ export default function SettingsPage() {
                         mb: 2,
                         background:
                           m === "dark"
-                            ? "linear-gradient(135deg, #1A0B2E, #0F0A1E)"
+                            ? "linear-gradient(135deg, #18181B, #09090B)"
                             : "linear-gradient(135deg, #ffffff, #e8e8e8)",
                         border: "1px solid",
                         borderColor: m === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)",
