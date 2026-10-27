@@ -176,7 +176,7 @@ export default function LoginPage() {
                 mb: 0.5,
               }}
             >
-              LevelUp
+              Level Up AI
             </Typography>
             <Typography variant="body2" color="text.secondary">
               Sign in to continue your quest

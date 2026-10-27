@@ -8,8 +8,8 @@
         <version>4.1.0</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>com.habitengine</groupId>
-    <artifactId>HabitEngine</artifactId>
+    <groupId>com.levelupai</groupId>
+    <artifactId>level-up-ai</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>server</name>
     <description>server</description>

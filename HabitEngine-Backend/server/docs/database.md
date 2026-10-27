@@ -1,4 +1,4 @@
-# HabitEngine — Database
+# Level Up AI — Database
 
 > Last updated: 2026-07-11
 

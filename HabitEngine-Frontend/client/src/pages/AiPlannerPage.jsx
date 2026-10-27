@@ -513,7 +513,7 @@ export default function AiPlannerPage() {
                   "&.Mui-disabled": { background: "linear-gradient(135deg, #10B981, #06B6D4)", opacity: 0.6 },
                 }}
               >
-                {saving ? "Saving your plan…" : "💾 Save Plan to LevelUp"}
+                {saving ? "Saving your plan…" : "💾 Save Plan to Level Up AI"}
               </Button>
             </Box>
           </Box>

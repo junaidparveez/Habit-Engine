@@ -1,7 +1,7 @@
 import { createTheme } from "@mui/material/styles";
 
 /**
- * HabitEngine MUI Theme
+ * Level Up AI MUI Theme
  *
  * Design system with dark mode as default.
  * Uses a rich, modern color palette with purple accents.

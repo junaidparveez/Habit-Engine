@@ -132,7 +132,7 @@ export default function MainLayout() {
               WebkitTextFillColor: "transparent",
             }}
           >
-            LevelUp
+            Level Up AI
           </Typography>
             <Typography
               variant="caption"
@@ -302,7 +302,7 @@ export default function MainLayout() {
                 WebkitTextFillColor: "transparent",
               }}
             >
-              LevelUp
+              Level Up AI
             </Typography>
             <Tooltip title={mode === "dark" ? "Light mode" : "Dark mode"}>
               <IconButton onClick={toggleTheme} sx={{ color: "text.primary" }}>

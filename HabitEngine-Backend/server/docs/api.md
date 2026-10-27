@@ -1,4 +1,4 @@
-# HabitEngine — REST API Reference
+# Level Up AI — REST API Reference
 
 > Last updated: 2026-07-11
 

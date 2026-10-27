@@ -1,10 +1,10 @@
 # ============================================================
-# HabitEngine — Application Configuration
+# Level Up AI — Application Configuration
 # ============================================================
 
 spring:
   application:
-    name: HabitEngine
+    name: LevelUpAI
 
   # --- Database Configuration ---
   datasource:
@@ -17,7 +17,7 @@ spring:
       minimum-idle: 5
       idle-timeout: 300000
       connection-timeout: 20000
-      pool-name: HabitEngineHikariPool
+      pool-name: LevelUpAIHikariPool
 
   # --- JPA / Hibernate ---
   jpa:
@@ -71,7 +71,7 @@ server:
 logging:
   level:
     root: INFO
-    com.habitengine: DEBUG
+    com.levelupai: DEBUG
     org.springframework.security: WARN
     org.hibernate.SQL: WARN
     org.hibernate.type.descriptor.sql.BasicBinder: WARN
